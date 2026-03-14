@@ -135,6 +135,137 @@
         border-radius: 12px;
       }
 
+      /* Super-cateen nav responsiveness */
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        min-width: 0;
+      }
+
+      .nav a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 12px;
+        text-decoration: none;
+        min-width: 0;
+      }
+
+      /* App-wide responsive helpers */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      img,
+      svg,
+      video,
+      canvas {
+        max-width: 100%;
+        height: auto;
+      }
+
+      body {
+        overflow-x: hidden;
+      }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          padding-left: 12px;
+          padding-right: 12px;
+        }
+      }
+
+      /* Common "header" rows should wrap instead of overflow */
+      .page-head,
+      .section-head {
+        flex-wrap: wrap;
+      }
+
+      /* Make product grids responsive across pages that reuse this class */
+      .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+      }
+
+      @media (max-width: 720px) {
+        .nav {
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          padding-bottom: 4px;
+        }
+
+        .nav a {
+          flex: 0 0 auto;
+          white-space: nowrap;
+        }
+      }
+
+      /* Cart: icon-only on nav, pinned first */
+      .nav a[href='/cart'] {
+        order: 999;
+        margin-left: auto;
+        font-size: 0; /* hide "Cart" text, keep badge visible */
+        align-items: center;
+        height: 34px;
+      }
+
+      .nav a[href='/cart'] .badge {
+        display: inline-grid;
+        place-items: center;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 6px;
+        font-size: 12px;
+        line-height: 1;
+        margin-left: 8px;
+      }
+
+      .nav a[href='/cart']::before {
+        content: '';
+        width: 18px;
+        height: 18px;
+        background: currentColor;
+        -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%3E%3Cpath%20d%3D%27M6.5%206H21l-1.7%208.5a2%202%200%200%201-2%201.6H9.1a2%202%200%200%201-2-1.6L5.3%203.8A1.5%201.5%200%200%200%203.8%202.5H2.5%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%3Cpath%20d%3D%27M9.5%2021a1%201%200%201%200%200-2%201%201%200%200%200%200%202Z%27%20fill%3D%27black%27/%3E%3Cpath%20d%3D%27M17.5%2021a1%201%200%201%200%200-2%201%201%200%200%200%200%202Z%27%20fill%3D%27black%27/%3E%3C/svg%3E") no-repeat center / contain;
+        mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%3E%3Cpath%20d%3D%27M6.5%206H21l-1.7%208.5a2%202%200%200%201-2%201.6H9.1a2%202%200%200%201-2-1.6L5.3%203.8A1.5%201.5%200%200%200%203.8%202.5H2.5%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%3Cpath%20d%3D%27M9.5%2021a1%201%200%201%200%200-2%201%201%200%200%200%200%202Z%27%20fill%3D%27black%27/%3E%3Cpath%20d%3D%27M17.5%2021a1%201%200%201%200%200-2%201%201%200%200%200%200%202Z%27%20fill%3D%27black%27/%3E%3C/svg%3E") no-repeat center / contain;
+      }
+
+      /* Profile: icon-only in nav */
+      .nav a[href='/profile'] {
+        font-size: 0;
+        align-items: center;
+        height: 34px;
+      }
+
+      .nav a[href='/profile']::before {
+        content: '';
+        width: 18px;
+        height: 18px;
+        background: currentColor;
+        -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%3E%3Cpath%20d%3D%27M20%2021a8%208%200%201%200-16%200%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27/%3E%3Cpath%20d%3D%27M12%2013a4%204%200%201%200%200-8%204%204%200%200%200%200%208Z%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%3C/svg%3E") no-repeat center / contain;
+        mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%3E%3Cpath%20d%3D%27M20%2021a8%208%200%201%200-16%200%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27/%3E%3Cpath%20d%3D%27M12%2013a4%204%200%201%200%200-8%204%204%200%200%200%200%208Z%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%3C/svg%3E") no-repeat center / contain;
+      }
+
+      @media (max-width: 720px) {
+        .nav a[href='/cart'] {
+          position: sticky;
+          right: 0;
+          z-index: 2;
+          background: rgba(255, 255, 255, 0.92);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(236, 72, 153, 0.18);
+        }
+      }
+
       .loading,
       .loader,
       .loading-spinner,
@@ -165,6 +296,8 @@
       .mat-spinner circle {
         stroke: var(--brand-pink) !important;
       }
+
+      /* Nav responsiveness handled by the app header layout (Super-cateen/src/app/app.html). */
     </style>
     <script>
       (function () {
