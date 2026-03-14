@@ -1,0 +1,55 @@
+.page {
+  padding-top: 6px;
+}
+
+h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
+
+.muted {
+  color: rgba(15, 23, 42, 0.6);
+  margin: 0 0 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  text-align: left;
+  padding: 14px 14px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 40px rgba(2, 6, 23, 0.08);
+}
+
+.title {
+  font-weight: 800;
+}
+
+.subtitle {
+  margin-top: 6px;
+  color: rgba(15, 23, 42, 0.65);
+  font-size: 13px;
+}
+
+.error {
+  background: rgba(239, 68, 68, 0.10);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  color: #991b1b;
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+

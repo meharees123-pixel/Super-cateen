@@ -1,0 +1,82 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h1>Cart</h1>
+      <p class="muted">Items for the selected store only.</p>
+    </div>
+    <button class="btn" (click)="load()" [disabled]="isLoading">Refresh</button>
+  </div>
+
+  <div class="alert" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="info" *ngIf="infoMessage">{{ infoMessage }}</div>
+  <div class="loading" *ngIf="isLoading">Loading…</div>
+
+  <div class="empty" *ngIf="!isLoading && !items.length">Your cart is empty.</div>
+
+  <div class="list" *ngIf="!isLoading && items.length">
+    <article class="item" *ngFor="let i of items">
+      <div class="img">
+        <img
+          *ngIf="i?.product?.productImage; else placeholder"
+          [src]="i.product.productImage"
+          [alt]="i?.product?.name || 'Product'"
+        />
+        <ng-template #placeholder><div class="img-ph">No image</div></ng-template>
+      </div>
+
+      <div class="meta">
+        <div class="title">{{ i?.product?.name || i.productId }}</div>
+        <div class="muted">{{ i?.unitPrice | currency : 'USD' : 'symbol' : '1.0-2' }} each</div>
+      </div>
+
+      <div class="qty">
+        <button class="btn btn-outline" (click)="changeQty(i, i.quantity - 1)" [disabled]="i.quantity <= 1">-</button>
+        <input class="qty-input" type="number" [ngModel]="i.quantity" (ngModelChange)="changeQty(i, $event)" min="1" />
+        <button class="btn btn-outline" (click)="changeQty(i, i.quantity + 1)">+</button>
+      </div>
+
+      <div class="price">{{ i?.totalPrice | currency : 'USD' : 'symbol' : '1.0-2' }}</div>
+
+      <div class="actions">
+        <button class="btn btn-outline" (click)="remove(i)">Remove</button>
+      </div>
+    </article>
+  </div>
+
+  <div class="summary" *ngIf="!isLoading && items.length">
+    <div class="summary-row">
+      <div>
+        <div class="label">Delivery address</div>
+        <select class="input" [(ngModel)]="selectedUserAddressId" name="userAddressId">
+          <option value="">Select address…</option>
+          <option *ngFor="let a of addresses" [value]="a?._id">{{ a?.street }}, {{ a?.city }}</option>
+        </select>
+
+        <div class="label" style="margin-top: 10px">Delivery location</div>
+        <select class="input" [(ngModel)]="selectedDeliveryLocationId" name="deliveryLocationId">
+          <option value="">Select location…</option>
+          <option *ngFor="let l of deliveryLocations" [value]="l?._id">
+            {{ l?.name }}<ng-container *ngIf="l?.zoneCode"> ({{ l.zoneCode }})</ng-container>
+          </option>
+        </select>
+        <div class="muted" *ngIf="selectedDeliveryLocation?.notes">{{ selectedDeliveryLocation.notes }}</div>
+        <div class="summary-actions">
+          <button class="btn btn-outline" (click)="applyAddress()" [disabled]="!selectedUserAddressId || !selectedDeliveryLocationId">
+            Apply delivery details
+          </button>
+          <a class="link" routerLink="/profile">Manage addresses</a>
+        </div>
+      </div>
+
+      <div class="totals">
+        <div class="total-line">
+          <span class="label">Total</span>
+          <span class="total">{{ total | currency : 'USD' : 'symbol' : '1.0-2' }}</span>
+        </div>
+        <button class="btn" (click)="checkout()" [disabled]="isCheckingOut || !selectedUserAddressId || !selectedDeliveryLocationId">
+          {{ isCheckingOut ? 'Placing order…' : 'Checkout' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

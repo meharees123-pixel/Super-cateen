@@ -1,0 +1,76 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h1>Profile</h1>
+      <p class="muted">Account and delivery addresses.</p>
+    </div>
+    <button class="btn" (click)="load()" [disabled]="isLoading">Refresh</button>
+  </div>
+
+  <div class="alert" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loading" *ngIf="isLoading">Loading…</div>
+
+  <div class="card" *ngIf="!isLoading">
+    <div class="card-title">User</div>
+    <div class="kv">
+      <div class="k">User ID</div>
+      <div class="v">{{ user?._id || userId }}</div>
+    </div>
+    <div class="kv" *ngIf="phone">
+      <div class="k">Phone</div>
+      <div class="v">{{ phone }}</div>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="!isLoading">
+    <div class="card-title">Addresses</div>
+    <div class="empty" *ngIf="!addresses.length">No saved addresses.</div>
+    <div class="addr" *ngFor="let a of addresses">
+      <div class="addr-row">
+        <div>
+          <div class="addr-title">{{ a?.street }}, {{ a?.city }}</div>
+          <div class="muted">{{ a?.state }} {{ a?.country }}</div>
+        </div>
+        <div class="addr-actions">
+          <button class="btn btn-outline" type="button" (click)="startEdit(a)">Edit</button>
+          <button class="btn btn-outline" type="button" (click)="deleteAddress(a)" [disabled]="isDeletingId === a?._id">
+            {{ isDeletingId === a?._id ? 'Deleting…' : 'Delete' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="!isLoading">
+    <div class="card-title">{{ editingAddressId ? 'Edit address' : 'Add address' }}</div>
+    <div class="msg" *ngIf="addressMessage">{{ addressMessage }}</div>
+
+    <div class="form">
+      <label>
+        <div class="label">Street</div>
+        <input class="input" [(ngModel)]="street" name="street" />
+      </label>
+      <label>
+        <div class="label">City</div>
+        <input class="input" [(ngModel)]="city" name="city" />
+      </label>
+      <label>
+        <div class="label">State (optional)</div>
+        <input class="input" [(ngModel)]="state" name="state" />
+      </label>
+      <label>
+        <div class="label">Country</div>
+        <input class="input" [(ngModel)]="country" name="country" />
+      </label>
+
+      <div class="form-actions">
+        <button class="btn btn-primary" type="button" (click)="saveAddress()" [disabled]="isSavingAddress">
+          {{ isSavingAddress ? 'Saving…' : editingAddressId ? 'Update address' : 'Save address' }}
+        </button>
+        <button class="btn btn-outline" type="button" (click)="cancelEdit()" *ngIf="editingAddressId" [disabled]="isSavingAddress">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

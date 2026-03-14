@@ -1,0 +1,171 @@
+<section class="page">
+  <div class="hero">
+    <div class="page-head">
+      <div>
+        <h1>Dashboard</h1>
+        <p class="muted">Browse categories and products for the selected store.</p>
+      </div>
+      <button class="btn btn-outline" (click)="load()" [disabled]="isLoading">Refresh</button>
+    </div>
+
+    <form class="global-search" (ngSubmit)="openGlobalSearch()">
+      <div class="search-field">
+        <span class="icon" aria-hidden="true">⌕</span>
+        <input
+          class="input"
+          name="q"
+          [(ngModel)]="q"
+          (ngModelChange)="onQueryChange($event)"
+          placeholder="Search products, categories…"
+        />
+        <button class="clear" type="button" (click)="clearSearch()" *ngIf="q.trim()" aria-label="Clear search">×</button>
+      </div>
+      <button class="btn btn-primary" type="submit" [disabled]="!q.trim()">Search</button>
+    </form>
+  </div>
+
+  <div class="alert" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loading" *ngIf="isLoading">Loading…</div>
+
+  <div class="categories" *ngIf="!isLoading && categories.length">
+    <button class="category-card" type="button" [class.active]="!activeCategoryId" (click)="selectCategory('')">
+      <div class="thumb all">All</div>
+      <div class="meta">
+        <div class="name">All categories</div>
+        <div class="muted">Browse everything</div>
+      </div>
+    </button>
+
+    <button
+      class="category-card"
+      type="button"
+      *ngFor="let c of categories; trackBy: trackById"
+      [class.active]="idOf(c) === activeCategoryId"
+      (click)="selectCategory(idOf(c))"
+    >
+      <div class="thumb">
+        <img *ngIf="c?.categoryImage; else catPlaceholder" [src]="c.categoryImage" [alt]="c?.name || 'Category'" />
+        <ng-template #catPlaceholder>
+          <div class="thumb-ph">{{ (c?.name || '?').slice(0, 1) }}</div>
+        </ng-template>
+      </div>
+      <div class="meta">
+        <div class="name">{{ c?.name }}</div>
+        <div class="muted" *ngIf="c?.categoryCode">{{ c.categoryCode }}</div>
+      </div>
+    </button>
+  </div>
+
+  <div class="search-panel" *ngIf="!isLoading && q.trim().length >= 2">
+    <div class="section">
+      <div class="section-head">
+        <h2>Search results</h2>
+        <div class="muted">
+          <ng-container *ngIf="searchLoading">Searching…</ng-container>
+          <ng-container *ngIf="!searchLoading">{{ searchResults.length }} items</ng-container>
+        </div>
+      </div>
+
+      <div class="alert" *ngIf="searchError">{{ searchError }}</div>
+
+      <div class="empty" *ngIf="!searchLoading && !searchError && !searchResults.length">No products found.</div>
+
+      <div class="product-grid" *ngIf="searchResults.length">
+        <article class="product-card" *ngFor="let p of searchResults; trackBy: trackById">
+          <div class="img">
+            <img *ngIf="p?.productImage; else placeholderSearch" [src]="p.productImage" [alt]="p?.name || 'Product'" />
+            <ng-template #placeholderSearch>
+              <div class="img-ph">No image</div>
+            </ng-template>
+          </div>
+
+          <div class="body">
+            <div class="title">{{ p?.name }}</div>
+            <div class="price">{{ p?.price | currency : 'USD' : 'symbol' : '1.0-2' }}</div>
+            <div class="desc" *ngIf="p?.description">{{ p.description }}</div>
+          </div>
+
+          <div class="actions">
+            <button
+              class="btn btn-primary"
+              (click)="addToCart(p)"
+              [disabled]="addingProductId === idOf(p) || (p?.quantity ?? 1) <= 0"
+            >
+              {{ (p?.quantity ?? 1) <= 0 ? 'Out of stock' : addingProductId === idOf(p) ? 'Adding…' : 'Add to cart' }}
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <button class="btn btn-outline" type="button" (click)="openGlobalSearch()" [disabled]="!q.trim()">
+        Open full search
+      </button>
+    </div>
+  </div>
+
+  <div class="empty" *ngIf="!isLoading && !errorMessage && !sections.length">
+    <div class="empty-title">No dashboard products found for this store.</div>
+    <div class="muted">Dashboard categories returned: {{ categories.length }} | Store categories: {{ storeCategories.length }}</div>
+    <button class="btn btn-outline" (click)="showDebug = !showDebug" *ngIf="debug">
+      {{ showDebug ? 'Hide debug' : 'Show debug' }}
+    </button>
+    <pre class="debug" *ngIf="debug && showDebug">{{ debug | json }}</pre>
+  </div>
+
+  <div class="empty" *ngIf="!isLoading && !errorMessage && sections.length && q.trim() && !filteredSections.length">
+    <div class="empty-title">No matches.</div>
+    <div class="muted">Try a different keyword, or clear the search.</div>
+    <button class="btn btn-outline" type="button" (click)="clearSearch()">Clear search</button>
+  </div>
+
+  <div class="sections" *ngIf="!isLoading">
+    <div class="section" *ngFor="let s of filteredSections; trackBy: trackById">
+      <div class="section-head">
+        <div class="section-title">
+          <div class="section-thumb">
+            <img *ngIf="s?.image; else sectionPlaceholder" [src]="s.image" [alt]="s?.name || 'Category'" />
+            <ng-template #sectionPlaceholder>
+              <div class="thumb-ph">{{ (s?.name || '?').slice(0, 1) }}</div>
+            </ng-template>
+          </div>
+          <h2>{{ s?.name }}</h2>
+        </div>
+        <div class="muted">{{ (s?.products || []).length }} items</div>
+      </div>
+
+      <div class="product-grid" *ngIf="(s?.products || []).length; else emptySection">
+        <article class="product-card" *ngFor="let p of s?.products; trackBy: trackById">
+          <div class="img">
+            <img *ngIf="p?.productImage; else placeholder" [src]="p.productImage" [alt]="p?.name || 'Product'" />
+            <ng-template #placeholder>
+              <div class="img-ph">No image</div>
+            </ng-template>
+          </div>
+
+          <div class="body">
+            <div class="title">{{ p?.name }}</div>
+            <div class="price">{{ p?.price | currency : 'USD' : 'symbol' : '1.0-2' }}</div>
+            <div class="desc" *ngIf="p?.description">{{ p.description }}</div>
+          </div>
+
+          <div class="actions">
+            <button
+              class="btn btn-primary"
+              (click)="addToCart(p)"
+              [disabled]="addingProductId === idOf(p) || (p?.quantity ?? 1) <= 0"
+            >
+              {{
+                (p?.quantity ?? 1) <= 0 ? 'Out of stock' : addingProductId === idOf(p) ? 'Adding…' : 'Add to cart'
+              }}
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <ng-template #emptySection>
+        <div class="empty">No products for this category.</div>
+      </ng-template>
+    </div>
+  </div>
+</section>
+

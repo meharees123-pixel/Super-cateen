@@ -1,0 +1,16 @@
+<div class="page">
+  <h1>Select a store</h1>
+  <p class="muted">Pick where you want to shop.</p>
+
+  <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="grid" *ngIf="!isLoading">
+    <button class="card" *ngFor="let s of stores" (click)="selectStore(s)">
+      <div class="title">{{ s.name }}</div>
+      <div class="subtitle">{{ s.location || '—' }}</div>
+    </button>
+  </div>
+
+  <div class="muted" *ngIf="isLoading">Loading stores…</div>
+</div>
+

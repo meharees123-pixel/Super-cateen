@@ -1,0 +1,38 @@
+<div class="app-shell">
+  <header class="app-header">
+    <a class="brand" routerLink="/dashboard">
+      <span class="brand-mark">SC</span>
+      <span class="brand-text">SuperCateen</span>
+    </a>
+
+    <nav class="nav" *ngIf="isLoggedIn()">
+      <a routerLink="/dashboard" routerLinkActive="active">Home</a>
+      <a routerLink="/search" routerLinkActive="active">Search</a>
+      <a routerLink="/cart" routerLinkActive="active">Cart <span class="badge" *ngIf="cartCount()">{{ cartCount() }}</span></a>
+      <a routerLink="/orders" routerLinkActive="active">Orders</a>
+      <a routerLink="/profile" routerLinkActive="active">Profile</a>
+      <a routerLink="/stores" routerLinkActive="active">Store<span *ngIf="storeName()">: {{ storeName() }}</span></a>
+    </nav>
+
+    <div class="header-actions" *ngIf="isLoggedIn()">
+      <button class="btn btn-outline" (click)="logout()">Logout</button>
+    </div>
+  </header>
+  <div class="top-loader" *ngIf="loading.isLoading()"></div>
+
+  <main class="app-main">
+    <router-outlet></router-outlet>
+  </main>
+
+  <footer class="app-footer">
+    <div>© {{ currentYear }} SuperCateen</div>
+    <div class="muted">Powered by Store API</div>
+  </footer>
+
+  <div class="toast-wrap" *ngIf="toast.toasts().length">
+    <button class="toast" *ngFor="let t of toast.toasts()" [class]="t.type" (click)="dismissToast(t.id)">
+      <div class="toast-msg">{{ t.message }}</div>
+      <div class="toast-hint">Click to dismiss</div>
+    </button>
+  </div>
+</div>

@@ -1,0 +1,44 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h1>Search</h1>
+      <p class="muted">Global search across products (name/description).</p>
+    </div>
+  </div>
+
+  <form class="search-bar" (ngSubmit)="search()">
+    <input
+      class="input"
+      name="q"
+      [(ngModel)]="q"
+      (ngModelChange)="onQueryChange($event)"
+      (keydown.enter)="$event.preventDefault(); search()"
+      placeholder="Search products…"
+    />
+    <button class="btn btn-primary" type="submit" [disabled]="isLoading">Search</button>
+  </form>
+
+  <div class="alert" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loading" *ngIf="isLoading">Searching…</div>
+
+  <div class="results" *ngIf="!isLoading">
+    <div class="empty" *ngIf="q.trim() && !results.length">No products found.</div>
+
+    <article class="row" *ngFor="let p of results">
+      <div class="img">
+        <img *ngIf="p?.productImage; else placeholder" [src]="p.productImage" [alt]="p?.name || 'Product'" />
+        <ng-template #placeholder><div class="img-ph">No image</div></ng-template>
+      </div>
+      <div class="meta">
+        <div class="title">{{ p?.name }}</div>
+        <div class="muted" *ngIf="p?.description">{{ p.description }}</div>
+      </div>
+      <div class="price">{{ p?.price | currency : 'USD' : 'symbol' : '1.0-2' }}</div>
+      <div class="actions">
+        <button class="btn btn-primary" (click)="addToCart(p)" [disabled]="addingProductId === idOf(p)">
+          {{ addingProductId === idOf(p) ? 'Adding…' : 'Add' }}
+        </button>
+      </div>
+    </article>
+  </div>
+</section>

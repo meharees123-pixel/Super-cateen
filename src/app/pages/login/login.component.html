@@ -1,0 +1,18 @@
+<div class="page">
+  <div class="card">
+    <h1>Welcome</h1>
+    <p class="muted">Sign in with your phone number.</p>
+
+    <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+    <form (ngSubmit)="submit()">
+      <label class="label">Phone number</label>
+      <input class="input" [(ngModel)]="mobileNumber" name="mobileNumber" placeholder="+97412345678" />
+
+      <button class="btn primary" type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Signing in…' : 'Sign in' }}
+      </button>
+    </form>
+  </div>
+</div>
+
