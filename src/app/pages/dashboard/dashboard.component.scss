@@ -7,8 +7,9 @@
   padding: 14px;
   border-radius: 18px;
   border: 1px solid rgba(15, 23, 42, 0.08);
-  background: radial-gradient(1200px 220px at 20% 0%, rgba(37, 99, 235, 0.16), transparent 60%),
-    radial-gradient(900px 240px at 80% 0%, rgba(16, 185, 129, 0.12), transparent 55%),
+  background: radial-gradient(1200px 220px at 20% 0%, rgba(236, 72, 153, 0.18), transparent 60%),
+    radial-gradient(900px 240px at 80% 0%, rgba(251, 146, 60, 0.16), transparent 55%),
+    radial-gradient(900px 240px at 55% 0%, rgba(250, 204, 21, 0.12), transparent 60%),
     rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(10px);
 }
@@ -113,13 +114,13 @@ h2 {
 
 .category-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(37, 99, 235, 0.22);
+  border-color: rgba(251, 146, 60, 0.35);
   box-shadow: 0 14px 26px rgba(15, 23, 42, 0.08);
 }
 
 .category-card.active {
-  border-color: rgba(37, 99, 235, 0.45);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+  border-color: rgba(236, 72, 153, 0.45);
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.14);
 }
 
 .thumb {
@@ -133,8 +134,8 @@ h2 {
 }
 
 .thumb.all {
-  background: rgba(37, 99, 235, 0.12);
-  color: #1d4ed8;
+  background: rgba(236, 72, 153, 0.12);
+  color: #be185d;
   font-weight: 900;
 }
 
@@ -172,8 +173,8 @@ h2 {
   font-weight: 700;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(59, 130, 246, 0.1);
-  color: #1d4ed8;
+  background: rgba(236, 72, 153, 0.1);
+  color: #be185d;
 }
 
 .sections {
@@ -263,8 +264,17 @@ h2 {
 
 .product-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(37, 99, 235, 0.22);
+  border-color: rgba(236, 72, 153, 0.22);
   box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+}
+
+.btn.btn-primary {
+  border: 0;
+  background: linear-gradient(90deg, #ec4899, #fb923c, #facc15);
+}
+
+.btn.btn-primary:disabled {
+  background: rgba(15, 23, 42, 0.2);
 }
 
 .img {

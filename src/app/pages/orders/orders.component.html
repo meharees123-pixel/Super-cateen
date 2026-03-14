@@ -4,23 +4,50 @@
       <h1>Orders</h1>
       <p class="muted">Your recent orders.</p>
     </div>
-    <button class="btn" (click)="load()" [disabled]="isLoading">Refresh</button>
+    <button class="btn btn-outline" type="button" (click)="load()" [disabled]="isLoading">Refresh</button>
   </div>
 
   <div class="alert" *ngIf="errorMessage">{{ errorMessage }}</div>
   <div class="loading" *ngIf="isLoading">Loading…</div>
 
-  <div class="empty" *ngIf="!isLoading && !orders.length">No orders yet.</div>
+  <div class="empty" *ngIf="!isLoading && !orders.length">
+    <div class="empty-title">No orders yet.</div>
+    <div class="muted">When you place an order, it will appear here.</div>
+  </div>
 
   <div class="list" *ngIf="!isLoading && orders.length">
     <article class="order" *ngFor="let o of orders" [class.expanded]="expandedOrderId === o?._id" (click)="toggle(o)">
       <div class="top">
-        <div class="id">#{{ o?._id }}</div>
-        <div class="status">{{ o?.status || 'PENDING' }}</div>
+        <div class="id">
+          <span class="label">Order no:</span>
+          <span class="value">#{{ o?._id }}</span>
+        </div>
+
+        <div class="right">
+          <div class="amount">{{ o?.totalAmount | currency : 'USD' : 'symbol' : '1.0-2' }}</div>
+          <div
+            class="status"
+            [class.s-delivered]="(o?.status || 'PENDING').toUpperCase() === 'DELIVERED'"
+            [class.s-cancelled]="(o?.status || 'PENDING').toUpperCase() === 'CANCELLED'"
+            [class.s-pending]="(o?.status || 'PENDING').toUpperCase() === 'PENDING'"
+            [class.s-processing]="(o?.status || 'PENDING').toUpperCase() === 'PROCESSING'"
+            [class.s-shipped]="(o?.status || 'PENDING').toUpperCase() === 'SHIPPED'"
+          >
+            {{ o?.status || 'PENDING' }}
+          </div>
+          <div class="chev" aria-hidden="true">▾</div>
+        </div>
       </div>
+
       <div class="meta">
-        <div class="muted">Placed: {{ o?.createdAt | date : 'medium' }}</div>
-        <div class="muted">Items: {{ (o?.items || []).length }}</div>
+        <div class="kv">
+          <div class="k">Placed</div>
+          <div class="v">{{ o?.createdAt | date : 'medium' }}</div>
+        </div>
+        <div class="kv">
+          <div class="k">Items</div>
+          <div class="v">{{ (o?.items || []).length }}</div>
+        </div>
       </div>
 
       <div class="addr" *ngIf="addressFor(o) as a">
@@ -28,6 +55,7 @@
         <div class="value">{{ a?.street }}, {{ a?.city }}<ng-container *ngIf="a?.state">, {{ a.state }}</ng-container></div>
         <div class="muted">{{ a?.country }}</div>
       </div>
+
       <div class="addr" *ngIf="deliveryLocationFor(o) as l">
         <div class="label">Delivery location</div>
         <div class="value">
@@ -35,10 +63,15 @@
         </div>
         <div class="muted" *ngIf="l?.notes">{{ l.notes }}</div>
       </div>
-      <div class="amount">{{ o?.totalAmount | currency : 'USD' : 'symbol' : '1.0-2' }}</div>
+
+      <div class="hint" *ngIf="expandedOrderId !== o?._id">Tap to view items</div>
 
       <div class="details" *ngIf="expandedOrderId === o?._id">
-        <div class="details-title">Items</div>
+        <div class="details-head">
+          <div class="details-title">Items</div>
+          <div class="muted">{{ (o?.items || []).length }} items</div>
+        </div>
+
         <div class="rows" *ngIf="(o?.items || []).length; else noItems">
           <article class="row" *ngFor="let i of o.items">
             <div class="img">
@@ -46,14 +79,13 @@
                 *ngIf="productFor(i?.productId)?.productImage; else placeholder"
                 [src]="productFor(i.productId)?.productImage"
                 [alt]="productFor(i.productId)?.name || 'Product'"
+                decoding="async"
               />
               <ng-template #placeholder><div class="img-ph">No image</div></ng-template>
             </div>
             <div class="meta2">
               <div class="title">{{ productFor(i?.productId)?.name || i?.productId }}</div>
-              <div class="muted">
-                Qty: {{ i?.quantity }} | {{ i?.unitPrice | currency : 'USD' : 'symbol' : '1.0-2' }} each
-              </div>
+              <div class="muted">Qty: {{ i?.quantity }} · {{ i?.unitPrice | currency : 'USD' : 'symbol' : '1.0-2' }} each</div>
             </div>
             <div class="price">{{ i?.totalPrice | currency : 'USD' : 'symbol' : '1.0-2' }}</div>
           </article>
@@ -63,3 +95,4 @@
     </article>
   </div>
 </section>
+

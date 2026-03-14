@@ -1,12 +1,199 @@
 <!doctype html>
 <html lang="en">
-<head>
+  <head>
   <meta charset="utf-8">
   <title>SuperCateen</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
+    <style>
+      :root {
+        --brand-pink: #ec4899;
+        --brand-orange: #fb923c;
+        --brand-yellow: #facc15;
+        --brand-ring: rgba(236, 72, 153, 0.22);
+        --brand-grad: linear-gradient(90deg, var(--brand-pink), var(--brand-orange), var(--brand-yellow));
+        --bs-primary: var(--brand-pink);
+        --bs-primary-rgb: 236, 72, 153;
+        --bs-link-color: var(--brand-pink);
+        --bs-link-hover-color: #be185d;
+        --bs-focus-ring-color: var(--brand-ring);
+        --primary: var(--brand-pink);
+        --primary-rgb: 236, 72, 153;
+      }
+
+      a {
+        color: var(--brand-pink);
+      }
+
+      a:hover {
+        color: #be185d;
+      }
+
+      .btn.btn-primary,
+      button.btn.btn-primary,
+      a.btn.btn-primary,
+      .btn-primary,
+      form button[type='submit'],
+      form input[type='submit'] {
+        border: 0 !important;
+        background: var(--brand-grad) !important;
+        color: #0b1220 !important;
+      }
+
+      .btn.btn-primary:disabled,
+      button.btn.btn-primary:disabled,
+      a.btn.btn-primary:disabled,
+      .btn-primary:disabled,
+      form button[type='submit']:disabled,
+      form input[type='submit']:disabled {
+        background: rgba(15, 23, 42, 0.22) !important;
+        color: rgba(255, 255, 255, 0.88) !important;
+      }
+
+      .btn.btn-outline,
+      button.btn.btn-outline,
+      a.btn.btn-outline,
+      .btn-outline {
+        border-color: rgba(236, 72, 153, 0.35) !important;
+        color: var(--brand-pink) !important;
+        background: rgba(236, 72, 153, 0.06) !important;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus,
+      .input:focus,
+      .form-control:focus {
+        border-color: rgba(236, 72, 153, 0.5) !important;
+        box-shadow: 0 0 0 3px var(--brand-ring) !important;
+        outline: none !important;
+      }
+
+      :focus-visible {
+        outline: 3px solid var(--brand-ring);
+        outline-offset: 2px;
+      }
+
+      a.active,
+      .nav-link.active,
+      .router-link-active,
+      .router-link-exact-active {
+        color: var(--brand-pink) !important;
+      }
+
+      /* Active nav (works when routerLinkActive is on <a>, <li>, etc.) */
+      [routerLinkActive].active,
+      [routerLinkActive].active > a,
+      [routerLinkActive].active a,
+      a.active,
+      a.router-link-active,
+      a.router-link-exact-active {
+        color: var(--brand-pink) !important;
+      }
+
+      .nav a.active,
+      .nav a.router-link-active,
+      .nav a.router-link-exact-active {
+        background: rgba(236, 72, 153, 0.08) !important;
+        box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.12) !important;
+        border-radius: 12px;
+        text-decoration: none;
+      }
+
+      /* Fallback active state even if RouterLinkActive isn't working */
+      html[data-nav='dashboard'] .nav a[href='/dashboard'],
+      html[data-nav='search'] .nav a[href='/search'],
+      html[data-nav='cart'] .nav a[href='/cart'],
+      html[data-nav='orders'] .nav a[href='/orders'],
+      html[data-nav='profile'] .nav a[href='/profile'],
+      html[data-nav='stores'] .nav a[href='/stores'] {
+        background: rgba(236, 72, 153, 0.08) !important;
+        box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.12) !important;
+        border-radius: 12px;
+        text-decoration: none;
+        color: var(--brand-pink) !important;
+      }
+
+      nav a:hover,
+      .topbar a:hover,
+      .navbar a:hover {
+        color: var(--brand-pink) !important;
+      }
+
+      nav a.router-link-active,
+      nav a.router-link-exact-active,
+      .topbar a.router-link-active,
+      .topbar a.router-link-exact-active,
+      .navbar a.router-link-active,
+      .navbar a.router-link-exact-active,
+      nav a.active,
+      .topbar a.active,
+      .navbar a.active {
+        color: var(--brand-pink) !important;
+        box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.12) !important;
+        border-radius: 12px;
+      }
+
+      .loading,
+      .loader,
+      .loading-spinner,
+      .spinner,
+      .spinner-border,
+      .spinner-grow {
+        border-color: rgba(236, 72, 153, 0.25) !important;
+        color: var(--brand-pink) !important;
+      }
+
+      .mat-raised-button.mat-primary,
+      .mat-flat-button.mat-primary,
+      .mat-fab.mat-primary,
+      .mat-mini-fab.mat-primary,
+      .mat-mdc-button.mat-primary,
+      .mat-mdc-raised-button.mat-primary,
+      .mat-mdc-unelevated-button.mat-primary,
+      .mat-mdc-fab.mat-primary,
+      .mat-mdc-mini-fab.mat-primary,
+      .mat-mdc-button-base.mat-primary {
+        background: var(--brand-grad) !important;
+        color: #0b1220 !important;
+      }
+
+      .mat-mdc-progress-spinner circle,
+      .mat-mdc-spinner circle,
+      .mat-progress-spinner circle,
+      .mat-spinner circle {
+        stroke: var(--brand-pink) !important;
+      }
+    </style>
+    <script>
+      (function () {
+        function setNav() {
+          var path = (window.location && window.location.pathname) || '/';
+          var seg = path.split('?')[0].split('#')[0].split('/').filter(Boolean)[0] || 'dashboard';
+          document.documentElement.dataset.nav = seg;
+        }
+
+        var _pushState = history.pushState;
+        history.pushState = function () {
+          var ret = _pushState.apply(this, arguments);
+          setNav();
+          return ret;
+        };
+
+        var _replaceState = history.replaceState;
+        history.replaceState = function () {
+          var ret = _replaceState.apply(this, arguments);
+          setNav();
+          return ret;
+        };
+
+        window.addEventListener('popstate', setNav);
+        window.addEventListener('hashchange', setNav);
+        setNav();
+      })();
+    </script>
+  </head>
 <body>
   <app-root></app-root>
 </body>

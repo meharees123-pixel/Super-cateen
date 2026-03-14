@@ -1,6 +1,28 @@
 <div class="app-shell">
   <header class="app-header">
+    <style>
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .brand .mark,
+      .brand .brand-mark,
+      .brand .initials {
+        display: none !important;
+      }
+
+      .brand-logo {
+        width: 34px;
+        height: 34px;
+        object-fit: contain;
+        display: block;
+      }
+    </style>
+
     <a class="brand" routerLink="/dashboard">
+      <img class="brand-logo" src="/logo.png" alt="Super Cateen" width="34" height="34" decoding="async" />
       <span class="brand-mark">SC</span>
       <span class="brand-text">SuperCateen</span>
     </a>

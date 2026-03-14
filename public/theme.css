@@ -1,0 +1,195 @@
+:root {
+  --brand-pink: #ec4899;
+  --brand-orange: #fb923c;
+  --brand-yellow: #facc15;
+  --brand-ink: #0f172a;
+  --brand-muted: rgba(15, 23, 42, 0.68);
+  --brand-ring: rgba(236, 72, 153, 0.22);
+  --brand-grad: linear-gradient(90deg, var(--brand-pink), var(--brand-orange), var(--brand-yellow));
+  --brand-grad-soft: linear-gradient(
+    90deg,
+    rgba(236, 72, 153, 0.14),
+    rgba(251, 146, 60, 0.14),
+    rgba(250, 204, 21, 0.12)
+  );
+
+  /* Bootstrap tokens (if used) */
+  --bs-primary: var(--brand-pink);
+  --bs-primary-rgb: 236, 72, 153;
+  --bs-link-color: var(--brand-pink);
+  --bs-link-hover-color: #be185d;
+  --bs-focus-ring-color: var(--brand-ring);
+
+  /* Generic tokens */
+  --primary: var(--brand-pink);
+  --primary-rgb: 236, 72, 153;
+}
+
+/* Links */
+a {
+  color: var(--brand-pink);
+}
+
+a:hover {
+  color: #be185d;
+}
+
+/* Buttons */
+.btn.btn-primary,
+button.btn.btn-primary,
+a.btn.btn-primary,
+.btn-primary {
+  border: 0 !important;
+  background: var(--brand-grad) !important;
+  color: #0b1220 !important;
+}
+
+.mat-raised-button.mat-primary,
+.mat-flat-button.mat-primary,
+.mat-fab.mat-primary,
+.mat-mini-fab.mat-primary,
+.mat-mdc-button.mat-primary,
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-unelevated-button.mat-primary,
+.mat-mdc-fab.mat-primary,
+.mat-mdc-mini-fab.mat-primary,
+.mat-mdc-button-base.mat-primary {
+  background: var(--brand-grad) !important;
+  color: #0b1220 !important;
+}
+
+.mat-stroked-button.mat-primary,
+.mat-mdc-outlined-button.mat-primary {
+  border-color: rgba(236, 72, 153, 0.35) !important;
+  color: var(--brand-pink) !important;
+}
+
+.btn.btn-primary:hover,
+button.btn.btn-primary:hover,
+a.btn.btn-primary:hover,
+.btn-primary:hover {
+  filter: saturate(1.05) brightness(1.02);
+}
+
+.btn.btn-primary:disabled,
+button.btn.btn-primary:disabled,
+a.btn.btn-primary:disabled,
+.btn-primary:disabled {
+  background: rgba(15, 23, 42, 0.22) !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.btn.btn-outline,
+button.btn.btn-outline,
+a.btn.btn-outline,
+.btn-outline {
+  border-color: rgba(236, 72, 153, 0.35) !important;
+  color: var(--brand-pink) !important;
+  background: rgba(236, 72, 153, 0.06) !important;
+}
+
+.btn.btn-outline:hover,
+button.btn.btn-outline:hover,
+a.btn.btn-outline:hover,
+.btn-outline:hover {
+  background: rgba(236, 72, 153, 0.1) !important;
+}
+
+/* Common auth/login forms where button may not have .btn classes */
+form button[type='submit'],
+form input[type='submit'] {
+  border: 0 !important;
+  background: var(--brand-grad) !important;
+  color: #0b1220 !important;
+}
+
+form button[type='submit']:disabled,
+form input[type='submit']:disabled {
+  background: rgba(15, 23, 42, 0.22) !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+
+/* Inputs / focus */
+input:focus,
+select:focus,
+textarea:focus,
+.input:focus,
+.form-control:focus {
+  border-color: rgba(236, 72, 153, 0.5) !important;
+  box-shadow: 0 0 0 3px var(--brand-ring) !important;
+  outline: none !important;
+}
+
+:focus-visible {
+  outline: 3px solid var(--brand-ring);
+  outline-offset: 2px;
+}
+
+/* Active / links */
+a.active,
+.nav-link.active,
+.router-link-active,
+.router-link-exact-active {
+  color: var(--brand-pink) !important;
+}
+
+/* Topbar/nav hover + active (best-effort across layouts) */
+nav a:hover,
+.topbar a:hover,
+.navbar a:hover {
+  color: var(--brand-pink) !important;
+}
+
+nav a.router-link-active,
+nav a.router-link-exact-active,
+.topbar a.router-link-active,
+.topbar a.router-link-exact-active,
+.navbar a.router-link-active,
+.navbar a.router-link-exact-active,
+nav a.active,
+.topbar a.active,
+.navbar a.active {
+  color: var(--brand-pink) !important;
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.12) !important;
+  border-radius: 12px;
+}
+
+/* Loaders */
+.loading,
+.loader,
+.loading-spinner,
+.spinner,
+.spinner-border,
+.spinner-grow {
+  border-color: rgba(236, 72, 153, 0.25) !important;
+  color: var(--brand-pink) !important;
+}
+
+/* Angular Material (best-effort overrides) */
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-unelevated-button.mat-primary,
+.mat-mdc-fab.mat-primary,
+.mat-mdc-mini-fab.mat-primary {
+  background: var(--brand-grad) !important;
+  color: #0b1220 !important;
+}
+
+.mat-mdc-progress-spinner circle,
+.mat-mdc-spinner circle,
+.mat-progress-spinner circle,
+.mat-spinner circle {
+  stroke: var(--brand-pink) !important;
+}
+
+/* Hover rings/shadows */
+.card:hover,
+.product-card:hover,
+.category-card:hover {
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08) !important;
+}
+
+.category-card.active,
+.active.category-card {
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.14) !important;
+  border-color: rgba(236, 72, 153, 0.45) !important;
+}
