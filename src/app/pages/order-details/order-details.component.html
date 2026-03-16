@@ -1,0 +1,69 @@
+<section class="page details" *ngIf="order as o">
+  <div class="page-head">
+    <div>
+      <h1>Order #{{ o?._id }}</h1>
+      <p class="muted">Placed {{ o?.createdAt | date : 'medium' }}</p>
+    </div>
+    <a class="btn btn-outline" routerLink="/orders">Back to orders</a>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="kv">
+        <div class="k">Status</div>
+        <div class="v badge">{{ o?.status || 'PENDING' }}</div>
+      </div>
+      <div class="kv">
+        <div class="k">Total</div>
+        <div class="v strong">{{ o?.totalAmount | currency : 'USD' : 'symbol' : '1.0-2' }}</div>
+      </div>
+      <div class="kv">
+        <div class="k">Items</div>
+        <div class="v">{{ (o?.items || []).length }}</div>
+      </div>
+    </div>
+
+    <div class="card" *ngIf="addressFor() as a">
+      <div class="card-title">Delivery address</div>
+      <div class="addr">
+        <div>{{ a?.street }}</div>
+        <div>{{ a?.city }}<ng-container *ngIf="a?.state">, {{ a.state }}</ng-container></div>
+        <div class="muted">{{ a?.country }}</div>
+      </div>
+    </div>
+
+    <div class="card" *ngIf="deliveryLocation as l">
+      <div class="card-title">Delivery location</div>
+      <div class="addr">
+        <div>{{ l?.name }}<ng-container *ngIf="l?.zoneCode"> ({{ l.zoneCode }})</ng-container></div>
+        <div class="muted" *ngIf="l?.notes">{{ l.notes }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Items</div>
+    <div class="rows" *ngIf="(o?.items || []).length; else noItems">
+      <article class="row" *ngFor="let i of o.items">
+        <div class="img">
+          <img
+            *ngIf="productFor(i?.productId)?.productImage; else placeholder"
+            [src]="productFor(i.productId)?.productImage"
+            [alt]="productFor(i.productId)?.name || 'Product'"
+            decoding="async"
+          />
+          <ng-template #placeholder><div class="img-ph">No image</div></ng-template>
+        </div>
+        <div class="meta">
+          <div class="title">{{ productFor(i?.productId)?.name || i?.productId }}</div>
+          <div class="muted">Qty: {{ i?.quantity }} · {{ i?.unitPrice | currency : 'USD' : 'symbol' : '1.0-2' }} each</div>
+        </div>
+        <div class="price">{{ i?.totalPrice | currency : 'USD' : 'symbol' : '1.0-2' }}</div>
+      </article>
+    </div>
+    <ng-template #noItems><div class="empty">No items found in this order.</div></ng-template>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">Loading order…</div>
+  <div class="alert" *ngIf="!isLoading && errorMessage">{{ errorMessage }}</div>
+</section>

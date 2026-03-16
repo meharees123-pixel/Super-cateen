@@ -19,6 +19,8 @@ export class OrdersComponent implements OnInit {
   orders: any[] = [];
   userId = '';
   expandedOrderId = '';
+  page = 1;
+  pageSize = 10;
 
   addresses: any[] = [];
   private addressById = new Map<string, any>();
@@ -53,7 +55,13 @@ export class OrdersComponent implements OnInit {
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (res) => {
-          this.orders = res?.orders || [];
+          const rows = Array.isArray(res?.orders) ? res.orders : [];
+          this.orders = rows.sort((a: any, b: any) => {
+            const aDate = new Date(a?.createdAt || 0).getTime();
+            const bDate = new Date(b?.createdAt || 0).getTime();
+            return bDate - aDate;
+          });
+          this.page = 1;
           this.addresses = res?.addresses || [];
           this.addressById = new Map(this.addresses.map((a: any) => [String(a?._id), a]));
 
@@ -84,6 +92,34 @@ export class OrdersComponent implements OnInit {
     if (!id) return;
     this.expandedOrderId = this.expandedOrderId === id ? '' : id;
     if (this.expandedOrderId) this.hydrateOrderProducts(order);
+  }
+
+  goToDetails(order: any, event: Event): void {
+    event.stopPropagation();
+    const id = String(order?._id || '').trim();
+    if (!id) return;
+    this.router.navigateByUrl(`/orders/${id}`);
+  }
+
+  pagedOrders(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.orders.slice(start, start + this.pageSize);
+  }
+
+  nextPage(): void {
+    if (this.page < this.totalPages()) {
+      this.page += 1;
+    }
+  }
+
+  prevPage(): void {
+    if (this.page > 1) {
+      this.page -= 1;
+    }
+  }
+
+  totalPages(): number {
+    return Math.max(1, Math.ceil(this.orders.length / this.pageSize));
   }
 
   addressFor(order: any): any | null {

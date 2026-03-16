@@ -5,8 +5,8 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   // Keep this aligned with your Nest API.
-  //readonly baseUrl = 'http://localhost:3000';
-    private baseUrl = 'http://34.56.150.67:3000';
+  readonly baseUrl = 'http://localhost:3000';
+   // private baseUrl = 'http://34.56.150.67:3000';
 
   constructor(private readonly http: HttpClient) {}
 
@@ -140,5 +140,9 @@ export class ApiService {
 
   getOrdersByUser(userId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/orders/user/${userId}`);
+  }
+
+  getOrder(id: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/orders/${id}`);
   }
 }

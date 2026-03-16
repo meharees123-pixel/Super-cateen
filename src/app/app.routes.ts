@@ -8,6 +8,8 @@ import { SearchComponent } from './pages/search/search.component';
 import { CartComponent } from './pages/cart/cart.component';
 import { OrdersComponent } from './pages/orders/orders.component';
 import { ProfileComponent } from './pages/profile/profile.component';
+import { OrderSuccessComponent } from './pages/order-success/order-success.component';
+import { OrderDetailsComponent } from './pages/order-details/order-details.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -15,6 +17,8 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard, storeSelectedGuard] },
   { path: 'search', component: SearchComponent, canActivate: [authGuard, storeSelectedGuard] },
   { path: 'cart', component: CartComponent, canActivate: [authGuard, storeSelectedGuard] },
+  { path: 'orders/success/:id', component: OrderSuccessComponent, canActivate: [authGuard] },
+  { path: 'orders/:id', component: OrderDetailsComponent, canActivate: [authGuard] },
   { path: 'orders', component: OrdersComponent, canActivate: [authGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },

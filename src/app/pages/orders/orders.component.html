@@ -16,7 +16,15 @@
   </div>
 
   <div class="list" *ngIf="!isLoading && orders.length">
-    <article class="order" *ngFor="let o of orders" [class.expanded]="expandedOrderId === o?._id" (click)="toggle(o)">
+    <div class="pager">
+      <div>Page {{ page }} of {{ totalPages() }}</div>
+      <div class="pager-actions">
+        <button class="btn btn-outline" type="button" (click)="prevPage()" [disabled]="page === 1">Previous</button>
+        <button class="btn btn-outline" type="button" (click)="nextPage()" [disabled]="page === totalPages()">Next</button>
+      </div>
+    </div>
+
+    <article class="order" *ngFor="let o of pagedOrders()" [class.expanded]="expandedOrderId === o?._id" (click)="toggle(o)">
       <div class="top">
         <div class="id">
           <span class="label">Order no:</span>
@@ -24,6 +32,7 @@
         </div>
 
         <div class="right">
+          <button class="btn btn-ghost" type="button" (click)="goToDetails(o, $event)">Details</button>
           <div class="amount">{{ o?.totalAmount | currency : 'USD' : 'symbol' : '1.0-2' }}</div>
           <div
             class="status"
@@ -93,6 +102,13 @@
         <ng-template #noItems><div class="empty">No items in this order.</div></ng-template>
       </div>
     </article>
+
+    <div class="pager bottom">
+      <div>Page {{ page }} of {{ totalPages() }}</div>
+      <div class="pager-actions">
+        <button class="btn btn-outline" type="button" (click)="prevPage()" [disabled]="page === 1">Previous</button>
+        <button class="btn btn-outline" type="button" (click)="nextPage()" [disabled]="page === totalPages()">Next</button>
+      </div>
+    </div>
   </div>
 </section>
-

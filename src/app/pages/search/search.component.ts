@@ -24,6 +24,7 @@ export class SearchComponent implements OnInit {
   addingProductId = '';
 
   storeId = '';
+  private cartByProduct = new Map<string, { itemId: string; quantity: number }>();
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly keyup$ = new Subject<string>();
@@ -40,6 +41,7 @@ export class SearchComponent implements OnInit {
   ngOnInit(): void {
     const storeId = this.auth.getStoreId();
     if (storeId) this.storeId = storeId;
+    this.loadCart();
 
     const q$ = merge(this.keyup$.pipe(debounceTime(250)), this.submit$).pipe(
       map((v) => String(v || '').trim()),
@@ -108,8 +110,86 @@ export class SearchComponent implements OnInit {
       .addToCart({ userId, storeId, productId: String(productId), quantity: 1 })
       .pipe(finalize(() => (this.addingProductId = '')))
       .subscribe({
-        next: () => this.cartState.refresh(),
+        next: (item) => {
+          const pid = String(productId);
+          const id = item?._id ? String(item._id) : this.cartByProduct.get(pid)?.itemId || '';
+          const qty = Number(item?.quantity || 1);
+          if (id) this.cartByProduct.set(pid, { itemId: id, quantity: qty });
+          else this.loadCart();
+          this.cartState.refresh();
+        },
         error: () => {},
       });
+  }
+
+  qtyFor(product: any): number {
+    const pid = this.idOf(product);
+    return this.cartByProduct.get(pid)?.quantity ?? 0;
+  }
+
+  changeQty(product: any, delta: number): void {
+    const userId = this.auth.getUserId();
+    const storeId = this.auth.getStoreId();
+    const productId = product?._id;
+    if (!userId || !storeId || !productId) return;
+    const pid = String(productId);
+
+    const entry = this.cartByProduct.get(pid);
+    if (!entry) {
+      if (delta > 0) this.addToCart(product);
+      return;
+    }
+
+    const nextQty = entry.quantity + delta;
+
+    if (nextQty < 1) {
+      this.addingProductId = pid;
+      this.api
+        .deleteCartItem(entry.itemId)
+        .pipe(finalize(() => (this.addingProductId = '')))
+        .subscribe({
+          next: () => {
+            this.cartByProduct.delete(pid);
+            this.cartState.refresh();
+          },
+          error: () => {},
+        });
+      return;
+    }
+
+    const safeQty = Math.max(1, nextQty);
+    this.addingProductId = pid;
+    this.api
+      .updateCartItem(entry.itemId, {
+        userId,
+        storeId,
+        productId: pid,
+        quantity: safeQty,
+      })
+      .pipe(finalize(() => (this.addingProductId = '')))
+      .subscribe({
+        next: () => {
+          this.cartByProduct.set(pid, { ...entry, quantity: safeQty });
+          this.cartState.refresh();
+        },
+        error: () => {},
+      });
+  }
+
+  private loadCart(): void {
+    const userId = this.auth.getUserId();
+    const storeId = this.storeId;
+    if (!userId || !storeId) return;
+
+    this.api.getCartByUser(userId).subscribe({
+      next: (items) => {
+        const rows = Array.isArray(items) ? items : [];
+        const filtered = rows.filter((x: any) => String(x?.storeId) === String(storeId));
+        this.cartByProduct = new Map(
+          filtered.map((x: any) => [String(x?.productId), { itemId: String(x?._id), quantity: Number(x?.quantity || 1) }]),
+        );
+      },
+      error: () => {},
+    });
   }
 }

@@ -249,9 +249,14 @@ export class CartComponent implements OnInit {
             .createOrderFromCart({ userId, storeId, userAddressId, deliveryLocationId })
             .pipe(finalize(() => (this.isCheckingOut = false)))
             .subscribe({
-              next: () => {
+              next: (order) => {
                 this.cartState.refresh();
-                this.router.navigateByUrl('/orders');
+                const orderId = order?._id || order?.id;
+                if (orderId) {
+                  this.router.navigateByUrl(`/orders/success/${orderId}`);
+                } else {
+                  this.router.navigateByUrl('/orders');
+                }
               },
               error: (err) => {
                 const msg = err?.error?.message;

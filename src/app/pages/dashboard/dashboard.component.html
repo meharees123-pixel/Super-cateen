@@ -10,7 +10,7 @@
 
     <form class="global-search" (ngSubmit)="openGlobalSearch()">
       <div class="search-field">
-        <span class="icon" aria-hidden="true">⌕</span>
+        <span class="icon" aria-hidden="true">⌘</span>
         <input
           class="input"
           name="q"
@@ -86,13 +86,28 @@
           </div>
 
           <div class="actions">
-            <button
-              class="btn btn-primary"
-              (click)="addToCart(p)"
-              [disabled]="addingProductId === idOf(p) || (p?.quantity ?? 1) <= 0"
-            >
-              {{ (p?.quantity ?? 1) <= 0 ? 'Out of stock' : addingProductId === idOf(p) ? 'Adding…' : 'Add to cart' }}
-            </button>
+            <ng-container *ngIf="qtyFor(p) as qty; else addBtnSearch">
+              <div class="qty">
+                <button class="btn btn-outline sm" type="button" (click)="changeQty(p, -1)" [disabled]="addingProductId === idOf(p)">
+                  −
+                </button>
+                <div class="qty-value">{{ qty }}</div>
+                <button class="btn btn-primary sm" type="button" (click)="changeQty(p, 1)" [disabled]="addingProductId === idOf(p)">
+                  +
+                </button>
+              </div>
+            </ng-container>
+            <ng-template #addBtnSearch>
+              <button
+                class="btn btn-primary"
+                (click)="addToCart(p)"
+                [disabled]="addingProductId === idOf(p) || (p?.quantity ?? 1) <= 0"
+              >
+                {{
+                  (p?.quantity ?? 1) <= 0 ? 'Out of stock' : addingProductId === idOf(p) ? 'Adding…' : 'Add to cart'
+                }}
+              </button>
+            </ng-template>
           </div>
         </article>
       </div>
@@ -149,15 +164,28 @@
           </div>
 
           <div class="actions">
-            <button
-              class="btn btn-primary"
-              (click)="addToCart(p)"
-              [disabled]="addingProductId === idOf(p) || (p?.quantity ?? 1) <= 0"
-            >
-              {{
-                (p?.quantity ?? 1) <= 0 ? 'Out of stock' : addingProductId === idOf(p) ? 'Adding…' : 'Add to cart'
-              }}
-            </button>
+            <ng-container *ngIf="qtyFor(p) as qty; else addBtn">
+              <div class="qty">
+                <button class="btn btn-outline sm" type="button" (click)="changeQty(p, -1)" [disabled]="addingProductId === idOf(p)">
+                  −
+                </button>
+                <div class="qty-value">{{ qty }}</div>
+                <button class="btn btn-primary sm" type="button" (click)="changeQty(p, 1)" [disabled]="addingProductId === idOf(p)">
+                  +
+                </button>
+              </div>
+            </ng-container>
+            <ng-template #addBtn>
+              <button
+                class="btn btn-primary"
+                (click)="addToCart(p)"
+                [disabled]="addingProductId === idOf(p) || (p?.quantity ?? 1) <= 0"
+              >
+                {{
+                  (p?.quantity ?? 1) <= 0 ? 'Out of stock' : addingProductId === idOf(p) ? 'Adding…' : 'Add to cart'
+                }}
+              </button>
+            </ng-template>
           </div>
         </article>
       </div>
@@ -168,4 +196,3 @@
     </div>
   </div>
 </section>
-

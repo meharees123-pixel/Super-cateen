@@ -1,0 +1,37 @@
+<section class="page success">
+  <div class="card">
+    <div class="icon-wrap">
+      <div class="icon-check">✓</div>
+    </div>
+    <h1>Order placed!</h1>
+    <p class="muted">Thanks for your purchase. We’re getting it ready.</p>
+
+    <div class="summary" *ngIf="order as o">
+      <div class="kv">
+        <div class="k">Order number</div>
+        <div class="v">#{{ o?._id }}</div>
+      </div>
+      <div class="kv">
+        <div class="k">Placed</div>
+        <div class="v">{{ o?.createdAt | date : 'medium' }}</div>
+      </div>
+      <div class="kv">
+        <div class="k">Total</div>
+        <div class="v strong">{{ o?.totalAmount | currency : 'USD' : 'symbol' : '1.0-2' }}</div>
+      </div>
+      <div class="kv" *ngIf="o?.status">
+        <div class="k">Status</div>
+        <div class="v">{{ o.status }}</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" type="button" (click)="viewOrder()" [disabled]="!order">View order details</button>
+      <a class="btn btn-outline" routerLink="/orders">Go to orders</a>
+      <a class="btn btn-link" routerLink="/dashboard">Continue shopping</a>
+    </div>
+
+    <div class="loading" *ngIf="isLoading">Fetching your order…</div>
+    <div class="alert" *ngIf="!isLoading && errorMessage">{{ errorMessage }}</div>
+  </div>
+</section>

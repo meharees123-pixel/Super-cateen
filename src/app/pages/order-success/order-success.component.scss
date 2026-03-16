@@ -1,0 +1,85 @@
+.success {
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - 220px);
+}
+
+.card {
+  max-width: 520px;
+  width: 100%;
+  padding: 32px;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 20px 50px -28px rgba(15, 23, 42, 0.35);
+  text-align: center;
+}
+
+.icon-wrap {
+  width: 70px;
+  height: 70px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 16px;
+  background: #e7f7ef;
+  color: #0f9d58;
+  font-weight: 900;
+  font-size: 28px;
+}
+
+h1 {
+  margin: 0 0 4px;
+  font-size: 26px;
+}
+
+.muted {
+  color: #475569;
+  margin-bottom: 22px;
+}
+
+.summary {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+  text-align: left;
+}
+
+.kv {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.k {
+  color: #475569;
+  font-weight: 600;
+}
+
+.v {
+  font-weight: 700;
+}
+
+.v.strong {
+  font-size: 18px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn {
+  width: 100%;
+}
+
+.loading,
+.alert {
+  margin-top: 14px;
+}

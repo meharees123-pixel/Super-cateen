@@ -88,6 +88,32 @@ img {
   white-space: nowrap;
 }
 
+.actions {
+  justify-self: end;
+}
+
+.qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.08), rgba(59, 130, 246, 0.06));
+}
+
+.qty .btn.sm {
+  width: 34px;
+  min-width: 34px;
+  padding: 6px 0;
+  border-radius: 10px;
+}
+
+.qty-value {
+  font-weight: 900;
+  min-width: 28px;
+  text-align: center;
+}
+
 .empty {
   padding: 10px 12px;
   color: rgba(15, 23, 42, 0.65);
@@ -105,4 +131,3 @@ img {
     justify-self: start;
   }
 }
-

@@ -34,6 +34,7 @@ export class DashboardComponent implements OnInit {
   searchError = '';
   searchResults: any[] = [];
   private searchSeq = 0;
+  private cartByProduct = new Map<string, { itemId: string; quantity: number }>();
 
   constructor(
     private readonly api: ApiService,
@@ -49,6 +50,7 @@ export class DashboardComponent implements OnInit {
       return;
     }
     this.storeId = storeId;
+    this.loadCart();
     this.load();
   }
 
@@ -104,7 +106,6 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    // Avoid hammering the backend for single-character queries.
     if (query.length < 2) {
       this.searchError = '';
       this.searchResults = [];
@@ -118,12 +119,12 @@ export class DashboardComponent implements OnInit {
     this.searchError = '';
 
     this.api.searchProducts({ q: query, storeId: this.storeId, limit: 24, skip: 0 }).subscribe({
-      next: (data) => {
+      next: (data: any) => {
         if (seq !== this.searchSeq) return;
         this.searchResults = data || [];
         this.searchLoading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         if (seq !== this.searchSeq) return;
         this.searchResults = [];
         const msg = err?.error?.message;
@@ -141,6 +142,7 @@ export class DashboardComponent implements OnInit {
 
   load(): void {
     if (!this.storeId) return;
+    this.loadCart();
     this.isLoading = true;
     this.errorMessage = '';
     this.debug = null;
@@ -165,6 +167,23 @@ export class DashboardComponent implements OnInit {
           this.errorMessage = msg ? String(msg) : 'Failed to load dashboard.';
         },
       });
+  }
+
+  private loadCart(): void {
+    const userId = this.auth.getUserId();
+    const storeId = this.storeId;
+    if (!userId || !storeId) return;
+
+    this.api.getCartByUser(userId).subscribe({
+      next: (items: any) => {
+        const rows = Array.isArray(items) ? items : [];
+        const filtered = rows.filter((x: any) => String(x?.storeId) === String(storeId));
+        this.cartByProduct = new Map(
+          filtered.map((x: any) => [String(x?.productId), { itemId: String(x?._id), quantity: Number(x?.quantity || 1) }]),
+        );
+      },
+      error: () => {},
+    });
   }
 
   loadDebug(): void {
@@ -198,7 +217,66 @@ export class DashboardComponent implements OnInit {
       .addToCart({ userId, storeId: this.storeId, productId: String(productId), quantity: 1 })
       .pipe(finalize(() => (this.addingProductId = '')))
       .subscribe({
-        next: () => this.cartState.refresh(),
+        next: (item: any) => {
+          const pid = String(productId);
+          const id = item?._id ? String(item._id) : this.cartByProduct.get(pid)?.itemId || '';
+          const qty = Number(item?.quantity || 1);
+          if (id) this.cartByProduct.set(pid, { itemId: id, quantity: qty });
+          else this.loadCart();
+          this.cartState.refresh();
+        },
+        error: () => {},
+      });
+  }
+
+  qtyFor(product: any): number {
+    const pid = this.idOf(product);
+    return this.cartByProduct.get(pid)?.quantity ?? 0;
+  }
+
+  changeQty(product: any, delta: number): void {
+    const userId = this.auth.getUserId();
+    const productId = product?._id;
+    if (!userId || !this.storeId || !productId) return;
+    const pid = String(productId);
+
+    const entry = this.cartByProduct.get(pid);
+    if (!entry) {
+      if (delta > 0) this.addToCart(product);
+      return;
+    }
+
+    const nextQty = entry.quantity + delta;
+    if (nextQty < 1) {
+      this.addingProductId = pid;
+      this.api
+        .deleteCartItem(entry.itemId)
+        .pipe(finalize(() => (this.addingProductId = '')))
+        .subscribe({
+          next: () => {
+            this.cartByProduct.delete(pid);
+            this.cartState.refresh();
+          },
+          error: () => {},
+        });
+      return;
+    }
+
+    const safeQty = Math.max(1, nextQty);
+    this.addingProductId = pid;
+    this.api
+      .updateCartItem(entry.itemId, {
+        userId,
+        storeId: this.storeId,
+        productId: pid,
+        quantity: safeQty,
+      })
+      .pipe(finalize(() => (this.addingProductId = '')))
+      .subscribe({
+        next: () => {
+          this.cartByProduct.set(pid, { ...entry, quantity: safeQty });
+          this.cartState.refresh();
+        },
         error: () => {},
       });
   }

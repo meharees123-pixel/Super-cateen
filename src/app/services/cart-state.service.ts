@@ -28,10 +28,15 @@ export class CartStateService {
       return;
     }
 
-    this.api.getCartCount(userId, storeId).subscribe({
-      next: (res) => this.count.set(Number(res?.count || 0)),
+    this.api.getCartByUser(userId).subscribe({
+      next: (rows) => {
+        const items = Array.isArray(rows) ? rows : [];
+        const totalQty = items
+          .filter((i: any) => String(i?.storeId) === String(storeId))
+          .reduce((sum: number, i: any) => sum + Number(i?.quantity || 0), 0);
+        this.count.set(totalQty);
+      },
       error: () => this.count.set(0),
     });
   }
 }
-
