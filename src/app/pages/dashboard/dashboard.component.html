@@ -28,7 +28,7 @@
   <div class="loading" *ngIf="isLoading">Loading…</div>
 
   <div class="categories" *ngIf="!isLoading && categories.length">
-    <button class="category-card" type="button" [class.active]="!activeCategoryId" (click)="selectCategory('')">
+    <button class="category-card" type="button" [class.active]="!activeCategoryId" (click)="goToProducts('')">
       <div class="thumb all">All</div>
       <div class="meta">
         <div class="name">All categories</div>
@@ -41,7 +41,7 @@
       type="button"
       *ngFor="let c of categories; trackBy: trackById"
       [class.active]="idOf(c) === activeCategoryId"
-      (click)="selectCategory(idOf(c))"
+      (click)="goToProducts(idOf(c))"
     >
       <div class="thumb">
         <img *ngIf="c?.categoryImage; else catPlaceholder" [src]="c.categoryImage" [alt]="c?.name || 'Category'" />

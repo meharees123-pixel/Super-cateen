@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
@@ -9,13 +9,13 @@ import { AuthService } from '../../services/auth.service';
 import { CartStateService } from '../../services/cart-state.service';
 
 @Component({
-  selector: 'app-dashboard',
+  selector: 'app-product-list',
   standalone: true,
   imports: [CommonModule, FormsModule, CurrencyPipe],
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'],
+  templateUrl: './product-list.component.html',
+  styleUrl: './product-list.component.scss',
 })
-export class DashboardComponent implements OnInit {
+export class ProductListComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
 
@@ -23,17 +23,11 @@ export class DashboardComponent implements OnInit {
   categories: any[] = [];
   sections: any[] = [];
 
-  debug: any | null = null;
-  storeCategories: any[] = [];
-  showDebug = false;
+  activeCategoryId = '';
+  activeSubcategoryId = '';
+  q = '';
 
   addingProductId = '';
-  q = '';
-  activeCategoryId = '';
-  searchLoading = false;
-  searchError = '';
-  searchResults: any[] = [];
-  private searchSeq = 0;
   private cartByProduct = new Map<string, { itemId: string; quantity: number }>();
 
   constructor(
@@ -41,6 +35,7 @@ export class DashboardComponent implements OnInit {
     private readonly auth: AuthService,
     private readonly cartState: CartStateService,
     private readonly router: Router,
+    private readonly route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
@@ -50,103 +45,74 @@ export class DashboardComponent implements OnInit {
       return;
     }
     this.storeId = storeId;
+    const qpCategory = this.route.snapshot.queryParamMap.get('categoryId');
+    if (qpCategory) this.activeCategoryId = String(qpCategory);
     this.loadCart();
     this.load();
   }
 
-  get filteredCategories(): any[] {
-    const query = this.q.trim().toLowerCase();
-    if (!query) return this.categories;
-    return (this.categories || []).filter((c) => String(c?.name || '').toLowerCase().includes(query));
+  get subcategories(): any[] {
+    const sections = this.sectionsForActiveCategory;
+    const bucket = new Map<string, { id: string; name: string; products: any[] }>();
+
+    sections.forEach((sec: any, secIdx: number) => {
+      const products = Array.isArray(sec?.products) ? sec.products : [];
+      products.forEach((p: any, pIdx: number) => {
+        const nameRaw =
+          p?.subCategoryName ||
+          p?.subcategoryName ||
+          p?.subCategory?.name ||
+          p?.subCategory ||
+          p?.subcategory ||
+          'Other';
+        const name = String(nameRaw || 'Other').trim() || 'Other';
+        const id = name.toLowerCase() || `sub-${secIdx}-${pIdx}`;
+        const entry = bucket.get(id) || { id, name, products: [] as any[] };
+        entry.products.push(p);
+        bucket.set(id, entry);
+      });
+    });
+
+    return Array.from(bucket.values());
   }
 
-  get filteredSections(): any[] {
+  get activeProducts(): any[] {
+    const sections = this.sectionsForActiveCategory;
+    if (this.activeSubcategoryId) {
+      const sub = this.subcategories.find((s) => String(s.id) === this.activeSubcategoryId);
+      if (sub) return sub.products;
+    }
+    return sections.flatMap((s: any) => (Array.isArray(s?.products) ? s.products : []));
+  }
+
+  get filteredProducts(): any[] {
     const query = this.q.trim().toLowerCase();
-
-    const categoryFiltered = this.activeCategoryId
-      ? (this.sections || []).filter((s) => this.idOf(s) === this.activeCategoryId)
-      : this.sections;
-
-    if (!query) return categoryFiltered;
-
-    return (categoryFiltered || [])
-      .map((section) => {
-        const sectionName = String(section?.name || '').toLowerCase();
-        const products = Array.isArray(section?.products) ? section.products : [];
-
-        if (sectionName.includes(query)) return section;
-
-        const filteredProducts = products.filter((p: any) => {
-          const name = String(p?.name || '').toLowerCase();
-          const desc = String(p?.description || '').toLowerCase();
-          return name.includes(query) || desc.includes(query);
-        });
-
-        return { ...section, products: filteredProducts };
-      })
-      .filter((section) => (Array.isArray(section?.products) ? section.products.length : 0) > 0);
+    if (!query) return this.activeProducts;
+    return this.activeProducts.filter((p: any) => {
+      const name = String(p?.name || '').toLowerCase();
+      const desc = String(p?.description || '').toLowerCase();
+      return name.includes(query) || desc.includes(query);
+    });
   }
 
   selectCategory(id: string): void {
     this.activeCategoryId = String(id || '');
+    this.activeSubcategoryId = '';
+    this.syncSubcategory();
   }
 
   clearSearch(): void {
     this.q = '';
-    this.searchError = '';
-    this.searchResults = [];
-    this.searchLoading = false;
-    this.searchSeq += 1;
   }
 
-  onQueryChange(value: string): void {
-    const query = String(value || '').trim();
-    if (!query) {
-      this.clearSearch();
-      return;
-    }
-
-    if (query.length < 2) {
-      this.searchError = '';
-      this.searchResults = [];
-      this.searchLoading = false;
-      this.searchSeq += 1;
-      return;
-    }
-
-    const seq = (this.searchSeq += 1);
-    this.searchLoading = true;
-    this.searchError = '';
-
-    this.api.searchProducts({ q: query, storeId: this.storeId, limit: 24, skip: 0 }).subscribe({
-      next: (data: any) => {
-        if (seq !== this.searchSeq) return;
-        this.searchResults = data || [];
-        this.searchLoading = false;
-      },
-      error: (err: any) => {
-        if (seq !== this.searchSeq) return;
-        this.searchResults = [];
-        const msg = err?.error?.message;
-        this.searchError = msg ? String(msg) : 'Search failed.';
-        this.searchLoading = false;
-      },
-    });
-  }
-
-  openGlobalSearch(): void {
-    const query = this.q.trim();
-    if (!query) return;
-    this.router.navigate(['/search'], { queryParams: { q: query } });
+  selectSubcategory(id: string): void {
+    this.activeSubcategoryId = String(id || '');
   }
 
   load(): void {
     if (!this.storeId) return;
-    this.loadCart();
     this.isLoading = true;
     this.errorMessage = '';
-    this.debug = null;
-    this.storeCategories = [];
 
     forkJoin({
       categories: this.api.getDashboardCategories(this.storeId),
@@ -158,15 +124,23 @@ export class DashboardComponent implements OnInit {
           this.categories = res?.categories || [];
           this.sections = res?.sections || [];
 
-          if (!this.sections.length) {
-            this.loadDebug();
+          if (!this.activeCategoryId && this.categories.length) {
+            this.activeCategoryId = this.idOf(this.categories[0]);
           }
+          this.syncSubcategory();
         },
-        error: (err) => {
+        error: (err: any) => {
           const msg = err?.error?.message;
-          this.errorMessage = msg ? String(msg) : 'Failed to load dashboard.';
+          this.errorMessage = msg ? String(msg) : 'Failed to load products.';
         },
       });
+  }
+
+  private syncSubcategory(): void {
+    const scoped = this.sectionsForActiveCategory;
+    if (this.activeSubcategoryId && this.subcategories.some((s) => String(s.id) === this.activeSubcategoryId)) return;
+    const first = this.subcategories[0];
+    this.activeSubcategoryId = first ? String(first.id) : '';
   }
 
   private loadCart(): void {
@@ -186,31 +160,44 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  loadDebug(): void {
-    if (!this.storeId) return;
-    forkJoin({
-      dashboardCategories: this.api.getDashboardCategoriesDebug(this.storeId),
-      dashboardProducts: this.api.getDashboardProductsDebug(this.storeId),
-      storeCategories: this.api.getCategoriesByStore(this.storeId),
-    }).subscribe({
-      next: (res) => {
-        this.debug = res;
-        this.storeCategories = res?.storeCategories || [];
-      },
-      error: () => {},
-    });
+  belongsToActiveCategory(section: any): boolean {
+    if (!this.activeCategoryId) return true;
+    return this.sectionCategoryId(section) === String(this.activeCategoryId).trim();
   }
+
+  private sectionCategoryId(section: any): string {
+    const raw = section?.categoryId ?? section?.category?._id ?? section?.categoryId?._id ?? section?.category ?? '';
+    return String(raw || '').trim();
+  }
+
+  private get sectionsForActiveCategory(): any[] {
+    const all = Array.isArray(this.sections) ? this.sections : [];
+    if (!this.activeCategoryId) return all;
+    const filtered = all.filter((s) => this.belongsToActiveCategory(s));
+    return filtered.length ? filtered : all;
+  }
+
+  get subcategoryNames(): string[] {
+    return this.subcategories
+      .map((s: any) => s?.name || s?.title || s?.categoryName || s?.subCategoryName)
+      .filter(Boolean);
+  }
+
+  trackById = (_: number, value: any): string => this.idOf(value);
+  trackBySub = (_: number, value: any): string => String(value?.id || value?._id || _);
 
   idOf(value: any): string {
     return value?._id !== undefined && value?._id !== null ? String(value._id) : String(value || '');
   }
 
-  goToProducts(categoryId: string): void {
-    const id = String(categoryId || '');
-    this.router.navigate(['/products'], { queryParams: { categoryId: id || null } });
+  nameOfCategory(cat: any): string {
+    return cat?.name || cat?.title || cat?.categoryName || 'Category';
   }
 
-  trackById = (_: number, value: any): string => this.idOf(value);
+  qtyFor(product: any): number {
+    const pid = this.idOf(product);
+    return this.cartByProduct.get(pid)?.quantity ?? 0;
+  }
 
   addToCart(product: any): void {
     const userId = this.auth.getUserId();
@@ -232,11 +219,6 @@ export class DashboardComponent implements OnInit {
         },
         error: () => {},
       });
-  }
-
-  qtyFor(product: any): number {
-    const pid = this.idOf(product);
-    return this.cartByProduct.get(pid)?.quantity ?? 0;
   }
 
   changeQty(product: any, delta: number): void {

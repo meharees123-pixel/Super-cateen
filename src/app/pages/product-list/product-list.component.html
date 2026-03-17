@@ -1,0 +1,123 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h1>Products</h1>
+      <p class="muted">Browse by category and subcategory.</p>
+    </div>
+    <button class="btn btn-outline" (click)="load()" [disabled]="isLoading">Refresh</button>
+  </div>
+
+  <div class="alert" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loading" *ngIf="isLoading">Loading…</div>
+
+  <div class="catalog" *ngIf="!isLoading">
+    <aside class="sidebar">
+      <div class="sidebar-columns">
+        <div class="sidebar-section">
+          <div class="sidebar-title">Categories</div>
+          <ul class="category-list">
+            <li>
+              <button class="side-btn" type="button" [class.active]="!activeCategoryId" (click)="selectCategory('')">
+                All
+              </button>
+            </li>
+            <li *ngFor="let c of categories; trackBy: trackById">
+              <button
+                class="side-btn"
+                type="button"
+                [class.active]="idOf(c) === activeCategoryId"
+                (click)="selectCategory(idOf(c))"
+              >
+                {{ c?.name || 'Category' }}
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <div class="sidebar-section" *ngIf="subcategories.length">
+          <div class="sidebar-title">Subcategories</div>
+          <ul class="category-list">
+            <li>
+              <button class="side-btn" type="button" [class.active]="!activeSubcategoryId" (click)="selectSubcategory('')">
+                All
+              </button>
+            </li>
+            <li *ngFor="let s of subcategories; trackBy: trackBySub">
+              <button
+                class="side-btn"
+                type="button"
+                [class.active]="(s.id || '').toString() === activeSubcategoryId"
+                (click)="selectSubcategory((s.id || '').toString())"
+              >
+                {{ s?.name || 'Subcategory' }}
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+
+    <div class="products">
+      <div class="products-head">
+        <div>
+          <h2>Products</h2>
+          <div class="muted">{{ filteredProducts.length }} of {{ activeProducts.length }} visible</div>
+        </div>
+        <div class="search-wrap">
+          <input
+            class="search-input"
+            [(ngModel)]="q"
+            type="search"
+            placeholder="Search products by name or description"
+          />
+          <button class="btn btn-outline sm" type="button" (click)="clearSearch()" *ngIf="q.trim()">Clear</button>
+        </div>
+      </div>
+
+      <div class="product-grid" *ngIf="filteredProducts.length; else noProducts">
+        <article class="product-card" *ngFor="let p of filteredProducts; trackBy: trackById">
+          <div class="img">
+            <img *ngIf="p?.productImage; else placeholder" [src]="p.productImage" [alt]="p?.name || 'Product'" />
+            <ng-template #placeholder>
+              <div class="img-ph">No image</div>
+            </ng-template>
+          </div>
+
+          <div class="body">
+            <div class="title">{{ p?.name }}</div>
+            <div class="price">{{ p?.price | currency : 'USD' : 'symbol' : '1.0-2' }}</div>
+            <div class="desc" *ngIf="p?.description">{{ p.description }}</div>
+          </div>
+
+          <div class="actions">
+            <ng-container *ngIf="qtyFor(p) as qty; else addBtn">
+              <div class="qty">
+                <button class="btn btn-outline sm" type="button" (click)="changeQty(p, -1)" [disabled]="addingProductId === idOf(p)">
+                  −
+                </button>
+                <div class="qty-value">{{ qty }}</div>
+                <button class="btn btn-primary sm" type="button" (click)="changeQty(p, 1)" [disabled]="addingProductId === idOf(p)">
+                  +
+                </button>
+              </div>
+            </ng-container>
+            <ng-template #addBtn>
+              <button
+                class="btn btn-primary"
+                (click)="addToCart(p)"
+                [disabled]="addingProductId === idOf(p) || (p?.quantity ?? 1) <= 0"
+              >
+                {{
+                  (p?.quantity ?? 1) <= 0 ? 'Out of stock' : addingProductId === idOf(p) ? 'Adding…' : 'Add to cart'
+                }}
+              </button>
+            </ng-template>
+          </div>
+        </article>
+      </div>
+      <ng-template #noProducts>
+        <div class="empty">No products for the selected category.</div>
+      </ng-template>
+    </div>
+  </div>
+</section>
