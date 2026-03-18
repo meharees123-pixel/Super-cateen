@@ -248,6 +248,54 @@ h2 {
   gap: 12px;
 }
 
+.product-carousel {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.carousel-track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(220px, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.carousel-arrow {
+  border: none;
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.8), rgba(96, 165, 250, 0.7));
+  border-radius: 20px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.25);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  color: #fff;
+}
+
+.carousel-arrow i {
+  font-size: 1.25rem;
+}
+
+.carousel-arrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+  background: rgba(15, 23, 42, 0.1);
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.carousel-arrow:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.3);
+}
+
 .product-card {
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 14px;

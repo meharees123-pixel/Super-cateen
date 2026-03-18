@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -11,7 +11,7 @@ import { CartStateService } from '../../services/cart-state.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe],
+  imports: [CommonModule, FormsModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
@@ -26,6 +26,8 @@ export class DashboardComponent implements OnInit {
   debug: any | null = null;
   storeCategories: any[] = [];
   showDebug = false;
+  private sectionOffsets = new Map<string, number>();
+  productsPerPage = 4;
 
   addingProductId = '';
   q = '';
@@ -157,6 +159,7 @@ export class DashboardComponent implements OnInit {
         next: (res) => {
           this.categories = res?.categories || [];
           this.sections = res?.sections || [];
+          this.sectionOffsets.clear();
 
           if (!this.sections.length) {
             this.loadDebug();
@@ -211,6 +214,39 @@ export class DashboardComponent implements OnInit {
   }
 
   trackById = (_: number, value: any): string => this.idOf(value);
+
+  visibleSectionProducts(section: any): any[] {
+    const id = this.idOf(section);
+    const products = Array.isArray(section?.products) ? section.products : [];
+    const offset = this.sectionOffsets.get(id) ?? 0;
+    return products.slice(offset, offset + this.productsPerPage);
+  }
+
+  sectionHasPrev(section: any): boolean {
+    const id = this.idOf(section);
+    return (this.sectionOffsets.get(id) ?? 0) > 0;
+  }
+
+  sectionHasNext(section: any): boolean {
+    const id = this.idOf(section);
+    const products = Array.isArray(section?.products) ? section.products : [];
+    const offset = this.sectionOffsets.get(id) ?? 0;
+    return offset + this.productsPerPage < products.length;
+  }
+
+  prevSection(section: any): void {
+    const id = this.idOf(section);
+    const current = this.sectionOffsets.get(id) ?? 0;
+    this.sectionOffsets.set(id, Math.max(0, current - this.productsPerPage));
+  }
+
+  nextSection(section: any): void {
+    const id = this.idOf(section);
+    const products = Array.isArray(section?.products) ? section.products : [];
+    const maxOffset = Math.max(0, products.length - this.productsPerPage);
+    const current = this.sectionOffsets.get(id) ?? 0;
+    this.sectionOffsets.set(id, Math.min(maxOffset, current + this.productsPerPage));
+  }
 
   addToCart(product: any): void {
     const userId = this.auth.getUserId();

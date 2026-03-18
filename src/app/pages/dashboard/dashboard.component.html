@@ -148,46 +148,66 @@
         <div class="muted">{{ (s?.products || []).length }} items</div>
       </div>
 
-      <div class="product-grid" *ngIf="(s?.products || []).length; else emptySection">
-        <article class="product-card" *ngFor="let p of s?.products; trackBy: trackById">
-          <div class="img">
-            <img *ngIf="p?.productImage; else placeholder" [src]="p.productImage" [alt]="p?.name || 'Product'" />
-            <ng-template #placeholder>
-              <div class="img-ph">No image</div>
-            </ng-template>
-          </div>
+      <div class="product-carousel" *ngIf="(s?.products || []).length; else emptySection">
+        <button
+          class="carousel-arrow left"
+          type="button"
+          (click)="prevSection(s)"
+          [disabled]="!sectionHasPrev(s)"
+          aria-label="Show previous products"
+        >
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <div class="carousel-track">
+          <article class="product-card" *ngFor="let p of visibleSectionProducts(s); trackBy: trackById">
+            <div class="img">
+              <img *ngIf="p?.productImage; else placeholder" [src]="p.productImage" [alt]="p?.name || 'Product'" />
+              <ng-template #placeholder>
+                <div class="img-ph">No image</div>
+              </ng-template>
+            </div>
 
-          <div class="body">
-            <div class="title">{{ p?.name }}</div>
-            <div class="price">{{ p?.price | currency : 'USD' : 'symbol' : '1.0-2' }}</div>
-            <div class="desc" *ngIf="p?.description">{{ p.description }}</div>
-          </div>
+            <div class="body">
+              <div class="title">{{ p?.name }}</div>
+              <div class="price">{{ p?.price | currency : 'USD' : 'symbol' : '1.0-2' }}</div>
+              <div class="desc" *ngIf="p?.description">{{ p.description }}</div>
+            </div>
 
-          <div class="actions">
-            <ng-container *ngIf="qtyFor(p) as qty; else addBtn">
-              <div class="qty">
-                <button class="btn btn-outline sm" type="button" (click)="changeQty(p, -1)" [disabled]="addingProductId === idOf(p)">
-                  −
+            <div class="actions">
+              <ng-container *ngIf="qtyFor(p) as qty; else addBtn">
+                <div class="qty">
+                  <button class="btn btn-outline sm" type="button" (click)="changeQty(p, -1)" [disabled]="addingProductId === idOf(p)">
+                    −
+                  </button>
+                  <div class="qty-value">{{ qty }}</div>
+                  <button class="btn btn-primary sm" type="button" (click)="changeQty(p, 1)" [disabled]="addingProductId === idOf(p)">
+                    +
+                  </button>
+                </div>
+              </ng-container>
+              <ng-template #addBtn>
+                <button
+                  class="btn btn-primary"
+                  (click)="addToCart(p)"
+                  [disabled]="addingProductId === idOf(p) || (p?.quantity ?? 1) <= 0"
+                >
+                  {{
+                    (p?.quantity ?? 1) <= 0 ? 'Out of stock' : addingProductId === idOf(p) ? 'Adding…' : 'Add to cart'
+                  }}
                 </button>
-                <div class="qty-value">{{ qty }}</div>
-                <button class="btn btn-primary sm" type="button" (click)="changeQty(p, 1)" [disabled]="addingProductId === idOf(p)">
-                  +
-                </button>
-              </div>
-            </ng-container>
-            <ng-template #addBtn>
-              <button
-                class="btn btn-primary"
-                (click)="addToCart(p)"
-                [disabled]="addingProductId === idOf(p) || (p?.quantity ?? 1) <= 0"
-              >
-                {{
-                  (p?.quantity ?? 1) <= 0 ? 'Out of stock' : addingProductId === idOf(p) ? 'Adding…' : 'Add to cart'
-                }}
-              </button>
-            </ng-template>
-          </div>
-        </article>
+              </ng-template>
+            </div>
+          </article>
+        </div>
+        <button
+          class="carousel-arrow right"
+          type="button"
+          (click)="nextSection(s)"
+          [disabled]="!sectionHasNext(s)"
+          aria-label="Show more products"
+        >
+          <i class="bi bi-chevron-right"></i>
+        </button>
       </div>
 
       <ng-template #emptySection>
