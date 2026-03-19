@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
@@ -15,7 +15,7 @@ import { CartStateService } from '../../services/cart-state.service';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading = false;
   errorMessage = '';
 
@@ -26,8 +26,12 @@ export class DashboardComponent implements OnInit {
   debug: any | null = null;
   storeCategories: any[] = [];
   showDebug = false;
-  private sectionOffsets = new Map<string, number>();
-  productsPerPage = 4;
+  private readonly scrollStep = 260;
+  private readonly trackStates = new Map<string, { hasPrev: boolean; hasNext: boolean }>();
+  private readonly trackScrollHandlers = new Map<HTMLElement, () => void>();
+  private trackListSubscription: Subscription | null = null;
+
+  @ViewChildren('carouselTrack') carouselTracks!: QueryList<ElementRef<HTMLDivElement>>;
 
   addingProductId = '';
   q = '';
@@ -54,6 +58,17 @@ export class DashboardComponent implements OnInit {
     this.storeId = storeId;
     this.loadCart();
     this.load();
+  }
+
+  ngAfterViewInit(): void {
+    this.trackListSubscription = this.carouselTracks.changes.subscribe(() => this.scheduleTrackStateUpdate());
+    this.scheduleTrackStateUpdate();
+  }
+
+  ngOnDestroy(): void {
+    this.trackListSubscription?.unsubscribe();
+    this.trackScrollHandlers.forEach((cleanup) => cleanup());
+    this.trackScrollHandlers.clear();
   }
 
   get filteredCategories(): any[] {
@@ -159,7 +174,7 @@ export class DashboardComponent implements OnInit {
         next: (res) => {
           this.categories = res?.categories || [];
           this.sections = res?.sections || [];
-          this.sectionOffsets.clear();
+          this.scheduleTrackStateUpdate();
 
           if (!this.sections.length) {
             this.loadDebug();
@@ -216,36 +231,67 @@ export class DashboardComponent implements OnInit {
   trackById = (_: number, value: any): string => this.idOf(value);
 
   visibleSectionProducts(section: any): any[] {
-    const id = this.idOf(section);
-    const products = Array.isArray(section?.products) ? section.products : [];
-    const offset = this.sectionOffsets.get(id) ?? 0;
-    return products.slice(offset, offset + this.productsPerPage);
+    return Array.isArray(section?.products) ? section.products : [];
   }
 
   sectionHasPrev(section: any): boolean {
-    const id = this.idOf(section);
-    return (this.sectionOffsets.get(id) ?? 0) > 0;
+    return this.trackStates.get(this.idOf(section))?.hasPrev ?? false;
   }
 
   sectionHasNext(section: any): boolean {
-    const id = this.idOf(section);
-    const products = Array.isArray(section?.products) ? section.products : [];
-    const offset = this.sectionOffsets.get(id) ?? 0;
-    return offset + this.productsPerPage < products.length;
+    return this.trackStates.get(this.idOf(section))?.hasNext ?? false;
   }
 
   prevSection(section: any): void {
-    const id = this.idOf(section);
-    const current = this.sectionOffsets.get(id) ?? 0;
-    this.sectionOffsets.set(id, Math.max(0, current - this.productsPerPage));
+    this.scrollTrack(section, 'prev');
   }
 
   nextSection(section: any): void {
+    this.scrollTrack(section, 'next');
+  }
+
+  private scrollTrack(section: any, direction: 'prev' | 'next'): void {
+    const track = this.findTrack(section);
+    if (!track) return;
+    const step = Math.max(track.clientWidth - 40, this.scrollStep);
+    const delta = direction === 'next' ? step : -step;
+    track.scrollBy({ left: delta, behavior: 'smooth' });
+    this.updateTrackState(track);
+  }
+
+  private findTrack(section: any): HTMLElement | null {
     const id = this.idOf(section);
-    const products = Array.isArray(section?.products) ? section.products : [];
-    const maxOffset = Math.max(0, products.length - this.productsPerPage);
-    const current = this.sectionOffsets.get(id) ?? 0;
-    this.sectionOffsets.set(id, Math.min(maxOffset, current + this.productsPerPage));
+    const entry = this.carouselTracks?.find((ref) => ref.nativeElement.dataset['section'] === id);
+    return entry?.nativeElement ?? null;
+  }
+
+  private scheduleTrackStateUpdate(): void {
+    setTimeout(() => this.updateTrackStates());
+  }
+
+  private updateTrackStates(): void {
+    const tracks = this.carouselTracks?.toArray() ?? [];
+    tracks.forEach((ref) => {
+      const track = ref.nativeElement;
+      this.ensureTrackListener(track);
+      this.updateTrackState(track);
+    });
+  }
+
+  private ensureTrackListener(track: HTMLElement): void {
+    if (this.trackScrollHandlers.has(track)) return;
+    const handler = () => this.updateTrackState(track);
+    track.addEventListener('scroll', handler, { passive: true });
+    this.trackScrollHandlers.set(track, () => track.removeEventListener('scroll', handler));
+  }
+
+  private updateTrackState(track: HTMLElement): void {
+    const id = String(track.dataset['section'] ?? '');
+    if (!id) return;
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    const hasNext = maxScroll > track.scrollLeft + 1;
+    const hasPrev = track.scrollLeft > 1;
+    this.trackStates.set(id, { hasPrev, hasNext });
   }
 
   addToCart(product: any): void {

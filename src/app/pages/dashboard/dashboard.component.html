@@ -158,8 +158,8 @@
         >
           <i class="bi bi-chevron-left"></i>
         </button>
-        <div class="carousel-track">
-          <article class="product-card" *ngFor="let p of visibleSectionProducts(s); trackBy: trackById">
+        <div #carouselTrack class="carousel-track" [attr.data-section]="idOf(s)">
+          <article class="product-card" *ngFor="let p of (s?.products || []); trackBy: trackById">
             <div class="img">
               <img *ngIf="p?.productImage; else placeholder" [src]="p.productImage" [alt]="p?.name || 'Product'" />
               <ng-template #placeholder>
