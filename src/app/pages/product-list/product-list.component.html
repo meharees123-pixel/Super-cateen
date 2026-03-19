@@ -1,76 +1,75 @@
 <section class="page">
-  <div class="page-head">
-    <div>
-      <h1>Products</h1>
-      <p class="muted">Browse by category and subcategory.</p>
-    </div>
-    <button class="btn btn-outline" (click)="load()" [disabled]="isLoading">Refresh</button>
-  </div>
-
   <div class="alert" *ngIf="errorMessage">{{ errorMessage }}</div>
   <div class="loading" *ngIf="isLoading">Loading…</div>
 
   <div class="catalog" *ngIf="!isLoading">
     <aside class="catalog-sidebar">
-      <div class="panel-head">
-        <div>
-          <h3>Categories</h3>
-          <p class="muted small">Tap a category to reveal subcategories</p>
-        </div>
-      </div>
-      <ul class="category-list">
-        <li>
-          <button
-            class="category-row"
-            type="button"
-            [class.active]="!activeCategoryId"
-            (click)="selectCategory('')"
-            [attr.aria-pressed]="!activeCategoryId"
-          >
-            <span>
-              <strong>All categories</strong>
-            </span>
-            <i class="bi bi-chevron-right arrow-icon"></i>
-          </button>
-        </li>
-        <li *ngFor="let c of categories; trackBy: trackById">
-          <button
-            class="category-row"
-            type="button"
-            [class.active]="idOf(c) === activeCategoryId"
-            (click)="selectCategory(idOf(c))"
-            [attr.aria-pressed]="idOf(c) === activeCategoryId"
-          >
-            <span>
-              <strong>{{ c?.name || 'Category' }}</strong>
-              <small class="muted">{{ c?.description || c?.title }}</small>
-            </span>
-            <i class="bi bi-chevron-right arrow-icon"></i>
-          </button>
-        </li>
-      </ul>
-
-      <div class="subcategory-panel" *ngIf="subcategoriesLoading || subcategoryList.length">
-        <div class="panel-head">
-          <div>
-            <h3>Subcategories</h3>
-            <p class="muted small">{{ activeCategoryName }}</p>
+      <div class="catalog-columns">
+        <section class="column">
+          <div class="column-inner">
+            <ul class="category-list">
+            <li>
+              <button
+                class="category-row"
+                type="button"
+                [class.active]="!activeCategoryId"
+                (click)="selectCategory('')"
+                [attr.aria-pressed]="!activeCategoryId"
+              >
+                <span>
+                  <strong>All categories</strong>
+                </span>
+                <i class="bi bi-chevron-right arrow-icon"></i>
+              </button>
+            </li>
+            <li *ngFor="let c of categories; trackBy: trackById">
+              <button
+                class="category-row"
+                type="button"
+                [class.active]="idOf(c) === activeCategoryId"
+                (click)="selectCategory(idOf(c))"
+                [attr.aria-pressed]="idOf(c) === activeCategoryId"
+              >
+                <span>
+                  <strong>{{ c?.name || 'Category' }}</strong>
+                </span>
+                <i class="bi bi-chevron-right arrow-icon"></i>
+              </button>
+            </li>
+          </ul>
           </div>
-        </div>
-        <div class="muted small" *ngIf="subcategoriesLoading">Loading subcategories…</div>
-        <ul class="subcategory-list" *ngIf="!subcategoriesLoading">
-          <li *ngFor="let sub of subcategoryList; trackBy: trackBySubcategory">
-            <button
-              type="button"
-              class="subcategory-row"
-              [class.active]="idOf(sub) === activeSubcategoryId"
-              (click)="selectSubcategory(idOf(sub))"
-              [attr.aria-pressed]="idOf(sub) === activeSubcategoryId"
-            >
-              {{ sub?.name || sub?.title || 'Subcategory' }}
-            </button>
-          </li>
-        </ul>
+        </section>
+
+        <section class="column">
+          <div class="column-inner">
+            <div class="muted small" *ngIf="subcategoriesLoading">Loading subcategories…</div>
+            <ul class="subcategory-list" *ngIf="!subcategoriesLoading">
+              <li *ngFor="let sub of subcategoryList; trackBy: trackBySubcategory">
+                <button
+                  type="button"
+                  class="subcategory-row"
+                  [class.active]="idOf(sub) === activeSubcategoryId"
+                  (click)="selectSubcategory(idOf(sub))"
+                  [attr.aria-pressed]="idOf(sub) === activeSubcategoryId"
+                >
+                  <div class="subcategory-media">
+                    <img
+                      *ngIf="sub?.image || sub?.subcategoryImage; else subcatPlaceholder"
+                      [src]="sub?.image || sub?.subcategoryImage"
+                      [alt]="sub?.name || sub?.title || 'Subcategory'"
+                    />
+                    <ng-template #subcatPlaceholder>
+                      <div class="subcat-img-ph">No image</div>
+                    </ng-template>
+                  </div>
+                  <span class="subcategory-label">
+                    {{ sub?.name || sub?.title || 'Subcategory' }}
+                  </span>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </section>
       </div>
     </aside>
 
