@@ -26,6 +26,8 @@ export class ProductListComponent implements OnInit {
   activeCategoryId = '';
   activeSubcategoryId = '';
   q = '';
+  subcategoryList: any[] = [];
+  subcategoriesLoading = false;
 
   addingProductId = '';
   private cartByProduct = new Map<string, { itemId: string; quantity: number }>();
@@ -51,36 +53,12 @@ export class ProductListComponent implements OnInit {
     this.load();
   }
 
-  get subcategories(): any[] {
-    const sections = this.sectionsForActiveCategory;
-    const bucket = new Map<string, { id: string; name: string; products: any[] }>();
-
-    sections.forEach((sec: any, secIdx: number) => {
-      const products = Array.isArray(sec?.products) ? sec.products : [];
-      products.forEach((p: any, pIdx: number) => {
-        const nameRaw =
-          p?.subCategoryName ||
-          p?.subcategoryName ||
-          p?.subCategory?.name ||
-          p?.subCategory ||
-          p?.subcategory ||
-          'Other';
-        const name = String(nameRaw || 'Other').trim() || 'Other';
-        const id = name.toLowerCase() || `sub-${secIdx}-${pIdx}`;
-        const entry = bucket.get(id) || { id, name, products: [] as any[] };
-        entry.products.push(p);
-        bucket.set(id, entry);
-      });
-    });
-
-    return Array.from(bucket.values());
-  }
-
   get activeProducts(): any[] {
     const sections = this.sectionsForActiveCategory;
     if (this.activeSubcategoryId) {
-      const sub = this.subcategories.find((s) => String(s.id) === this.activeSubcategoryId);
-      if (sub) return sub.products;
+      return sections
+        .flatMap((s: any) => (Array.isArray(s?.products) ? s.products : []))
+        .filter((p: any) => this.productBelongsToSubcategory(p, this.activeSubcategoryId));
     }
     return sections.flatMap((s: any) => (Array.isArray(s?.products) ? s.products : []));
   }
@@ -98,7 +76,7 @@ export class ProductListComponent implements OnInit {
   selectCategory(id: string): void {
     this.activeCategoryId = String(id || '');
     this.activeSubcategoryId = '';
-    this.syncSubcategory();
+    this.loadSubcategoriesForActiveCategory();
   }
 
   clearSearch(): void {
@@ -127,7 +105,7 @@ export class ProductListComponent implements OnInit {
           if (!this.activeCategoryId && this.categories.length) {
             this.activeCategoryId = this.idOf(this.categories[0]);
           }
-          this.syncSubcategory();
+          this.loadSubcategoriesForActiveCategory();
         },
         error: (err: any) => {
           const msg = err?.error?.message;
@@ -136,11 +114,35 @@ export class ProductListComponent implements OnInit {
       });
   }
 
-  private syncSubcategory(): void {
-    const scoped = this.sectionsForActiveCategory;
-    if (this.activeSubcategoryId && this.subcategories.some((s) => String(s.id) === this.activeSubcategoryId)) return;
-    const first = this.subcategories[0];
-    this.activeSubcategoryId = first ? String(first.id) : '';
+  private loadSubcategoriesForActiveCategory(): void {
+    if (!this.activeCategoryId) {
+      this.subcategoryList = [];
+      this.activeSubcategoryId = '';
+      return;
+    }
+
+    const category = this.categories.find((cat) => this.idOf(cat) === this.activeCategoryId);
+    const name = this.extractCategoryName(category);
+    if (!this.idOf(category)) {
+      this.subcategoryList = [];
+      this.activeSubcategoryId = '';
+      return;
+    }
+
+    this.subcategoriesLoading = true;
+    this.api
+      .getSubcategoriesByCategoryId(this.idOf(category))
+      .pipe(finalize(() => (this.subcategoriesLoading = false)))
+      .subscribe({
+        next: (subs) => {
+          this.subcategoryList = subs || [];
+          this.syncActiveSubcategory();
+        },
+        error: () => {
+          this.subcategoryList = [];
+          this.activeSubcategoryId = '';
+        },
+      });
   }
 
   private loadCart(): void {
@@ -177,21 +179,55 @@ export class ProductListComponent implements OnInit {
     return filtered.length ? filtered : all;
   }
 
-  get subcategoryNames(): string[] {
-    return this.subcategories
-      .map((s: any) => s?.name || s?.title || s?.categoryName || s?.subCategoryName)
-      .filter(Boolean);
+  get activeCategoryName(): string {
+    if (!this.activeCategoryId) return 'All categories';
+    const category = this.categories.find((cat) => this.idOf(cat) === this.activeCategoryId);
+    return this.extractCategoryName(category) || 'Category';
   }
 
+  private syncActiveSubcategory(): void {
+    if (!this.subcategoryList.length) {
+      this.activeSubcategoryId = '';
+      return;
+    }
+
+    if (!this.activeSubcategoryId || !this.subcategoryList.some((s) => this.idOf(s) === this.activeSubcategoryId)) {
+      this.activeSubcategoryId = this.idOf(this.subcategoryList[0]);
+    }
+  }
+
+  private extractCategoryName(category: any): string {
+    return String(category?.name || category?.title || category?.categoryName || '').trim();
+  }
+
+  private productBelongsToSubcategory(product: any, subcategoryId: string): boolean {
+    const target = String(subcategoryId || '').trim().toLowerCase();
+    if (!target) return true;
+    return this.extractSubcategoryIdentifiers(product).includes(target);
+  }
+
+  private extractSubcategoryIdentifiers(product: any): string[] {
+    const fields = [
+      product?.subCategoryId,
+      product?.subCategory?._id,
+      product?.subCategory?.name,
+      product?.subcategoryId,
+      product?.subcategory?._id,
+      product?.subcategory?.name,
+      product?.subCategoryName,
+      product?.subcategoryName,
+    ];
+    return fields
+      .map((value) => String(value ?? '').trim().toLowerCase())
+      .filter((value) => value.length > 0);
+  }
+
+
   trackById = (_: number, value: any): string => this.idOf(value);
-  trackBySub = (_: number, value: any): string => String(value?.id || value?._id || _);
+  trackBySubcategory = (_: number, value: any): string => this.idOf(value);
 
   idOf(value: any): string {
     return value?._id !== undefined && value?._id !== null ? String(value._id) : String(value || '');
-  }
-
-  nameOfCategory(cat: any): string {
-    return cat?.name || cat?.title || cat?.categoryName || 'Category';
   }
 
   qtyFor(product: any): number {

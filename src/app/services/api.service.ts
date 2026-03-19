@@ -40,6 +40,11 @@ export class ApiService {
     return this.http.get<any[]>(`${this.baseUrl}/categories/store/${storeId}`);
   }
 
+  getSubcategoriesByCategoryId(categoryId: string): Observable<any[]> {
+    const encoded = encodeURIComponent(categoryId || '');
+    return this.http.get<any[]>(`${this.baseUrl}/subcategories/category/${encoded}`);
+  }
+
   getDeliveryLocationsByStore(storeId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/delivery-locations/store/${storeId}`);
   }

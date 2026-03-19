@@ -11,49 +11,66 @@
   <div class="loading" *ngIf="isLoading">Loading…</div>
 
   <div class="catalog" *ngIf="!isLoading">
-    <aside class="sidebar">
-      <div class="sidebar-columns">
-        <div class="sidebar-section">
-          <div class="sidebar-title">Categories</div>
-          <ul class="category-list">
-            <li>
-              <button class="side-btn" type="button" [class.active]="!activeCategoryId" (click)="selectCategory('')">
-                All
-              </button>
-            </li>
-            <li *ngFor="let c of categories; trackBy: trackById">
-              <button
-                class="side-btn"
-                type="button"
-                [class.active]="idOf(c) === activeCategoryId"
-                (click)="selectCategory(idOf(c))"
-              >
-                {{ c?.name || 'Category' }}
-              </button>
-            </li>
-          </ul>
+    <aside class="catalog-sidebar">
+      <div class="panel-head">
+        <div>
+          <h3>Categories</h3>
+          <p class="muted small">Tap a category to reveal subcategories</p>
         </div>
+      </div>
+      <ul class="category-list">
+        <li>
+          <button
+            class="category-row"
+            type="button"
+            [class.active]="!activeCategoryId"
+            (click)="selectCategory('')"
+            [attr.aria-pressed]="!activeCategoryId"
+          >
+            <span>
+              <strong>All categories</strong>
+            </span>
+            <i class="bi bi-chevron-right arrow-icon"></i>
+          </button>
+        </li>
+        <li *ngFor="let c of categories; trackBy: trackById">
+          <button
+            class="category-row"
+            type="button"
+            [class.active]="idOf(c) === activeCategoryId"
+            (click)="selectCategory(idOf(c))"
+            [attr.aria-pressed]="idOf(c) === activeCategoryId"
+          >
+            <span>
+              <strong>{{ c?.name || 'Category' }}</strong>
+              <small class="muted">{{ c?.description || c?.title }}</small>
+            </span>
+            <i class="bi bi-chevron-right arrow-icon"></i>
+          </button>
+        </li>
+      </ul>
 
-        <div class="sidebar-section" *ngIf="subcategories.length">
-          <div class="sidebar-title">Subcategories</div>
-          <ul class="category-list">
-            <li>
-              <button class="side-btn" type="button" [class.active]="!activeSubcategoryId" (click)="selectSubcategory('')">
-                All
-              </button>
-            </li>
-            <li *ngFor="let s of subcategories; trackBy: trackBySub">
-              <button
-                class="side-btn"
-                type="button"
-                [class.active]="(s.id || '').toString() === activeSubcategoryId"
-                (click)="selectSubcategory((s.id || '').toString())"
-              >
-                {{ s?.name || 'Subcategory' }}
-              </button>
-            </li>
-          </ul>
+      <div class="subcategory-panel" *ngIf="subcategoriesLoading || subcategoryList.length">
+        <div class="panel-head">
+          <div>
+            <h3>Subcategories</h3>
+            <p class="muted small">{{ activeCategoryName }}</p>
+          </div>
         </div>
+        <div class="muted small" *ngIf="subcategoriesLoading">Loading subcategories…</div>
+        <ul class="subcategory-list" *ngIf="!subcategoriesLoading">
+          <li *ngFor="let sub of subcategoryList; trackBy: trackBySubcategory">
+            <button
+              type="button"
+              class="subcategory-row"
+              [class.active]="idOf(sub) === activeSubcategoryId"
+              (click)="selectSubcategory(idOf(sub))"
+              [attr.aria-pressed]="idOf(sub) === activeSubcategoryId"
+            >
+              {{ sub?.name || sub?.title || 'Subcategory' }}
+            </button>
+          </li>
+        </ul>
       </div>
     </aside>
 
