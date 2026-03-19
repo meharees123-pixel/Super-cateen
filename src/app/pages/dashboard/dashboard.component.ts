@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren, AfterViewInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -47,6 +47,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly auth: AuthService,
     private readonly cartState: CartStateService,
     private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly zone: NgZone,
   ) {}
 
   ngOnInit(): void {
@@ -256,7 +258,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const step = Math.max(track.clientWidth - 40, this.scrollStep);
     const delta = direction === 'next' ? step : -step;
     track.scrollBy({ left: delta, behavior: 'smooth' });
-    this.updateTrackState(track);
+    this.scheduleTrackStateUpdate(track);
   }
 
   private findTrack(section: any): HTMLElement | null {
@@ -265,22 +267,30 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return entry?.nativeElement ?? null;
   }
 
-  private scheduleTrackStateUpdate(): void {
-    setTimeout(() => this.updateTrackStates());
+  private scheduleTrackStateUpdate(track?: HTMLElement): void {
+    setTimeout(() => {
+      this.zone.run(() => {
+        this.updateTrackStates(track);
+      });
+    });
   }
 
-  private updateTrackStates(): void {
-    const tracks = this.carouselTracks?.toArray() ?? [];
-    tracks.forEach((ref) => {
-      const track = ref.nativeElement;
-      this.ensureTrackListener(track);
-      this.updateTrackState(track);
+  private updateTrackStates(track?: HTMLElement): void {
+    const targets = track
+      ? [track]
+      : this.carouselTracks?.toArray().map((ref) => ref.nativeElement) ?? [];
+
+    targets.forEach((element) => {
+      this.ensureTrackListener(element);
+      this.updateTrackState(element);
     });
+
+    this.cdr.markForCheck();
   }
 
   private ensureTrackListener(track: HTMLElement): void {
     if (this.trackScrollHandlers.has(track)) return;
-    const handler = () => this.updateTrackState(track);
+    const handler = () => this.scheduleTrackStateUpdate(track);
     track.addEventListener('scroll', handler, { passive: true });
     this.trackScrollHandlers.set(track, () => track.removeEventListener('scroll', handler));
   }
