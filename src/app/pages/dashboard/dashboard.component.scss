@@ -322,8 +322,9 @@ h2 {
     transform 140ms ease,
     box-shadow 140ms ease,
     border-color 140ms ease;
-  flex: 0 0 260px;
-  width: 260px;
+  flex: 0 0 min(240px, 92vw);
+  width: min(240px, 92vw);
+  max-width: 280px;
 }
 
 .product-card:hover {
@@ -465,5 +466,25 @@ h2 {
 @media (max-width: 460px) {
   .product-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .product-carousel {
+    gap: 6px;
+  }
+
+  .carousel-track {
+    gap: 10px;
+  }
+
+  .carousel-arrow {
+    width: 32px;
+    height: 32px;
+  }
+
+  .product-card {
+    flex: 0 0 min(220px, 84vw);
+    width: min(220px, 84vw);
   }
 }
