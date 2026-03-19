@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  // Keep this aligned with your Nest API.
-  readonly baseUrl = 'http://localhost:3000';
-   // private baseUrl = 'http://34.56.150.67:3000';
+  readonly baseUrl = environment.baseUrl;
 
   constructor(private readonly http: HttpClient) {}
 
